@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Elderan Calculators</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='8' fill='%230d0a06'/><text x='32' y='48' font-size='44' text-anchor='middle' fill='%23f0d496' font-family='serif'>⟁</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0a06;
+    --bg-card: #181109;
+    --bg-elevated: #241a0f;
+    --bg-input: #0f0a04;
+    --gold: #c9a876;
+    --gold-bright: #f0d496;
+    --gold-dim: #8a7556;
+    --burgundy: #722929;
+    --burgundy-bright: #9c3838;
+    --text: #e8dcc4;
+    --text-muted: #968670;
+    --border: #3d2f1f;
+    --border-bright: #6b4f30;
+    --shadow: 0 4px 30px rgba(0,0,0,0.6);
+    --shadow-inset: inset 0 1px 0 rgba(255,220,160,0.06), inset 0 -1px 0 rgba(0,0,0,0.4);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { min-height: 100vh; }
+
+  body {
+    background-color: var(--bg);
+    background-image:
+      radial-gradient(at 15% 20%, rgba(114,41,41,0.12) 0px, transparent 55%),
+      radial-gradient(at 85% 80%, rgba(201,168,118,0.08) 0px, transparent 55%),
+      radial-gradient(at 50% 50%, rgba(0,0,0,0.4) 0px, transparent 70%);
+    color: var(--text);
+    font-family: 'Crimson Pro', Georgia, serif;
+    font-size: 17px;
+    line-height: 1.5;
+    padding: 28px 16px 80px;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    pointer-events: none; z-index: 0; opacity: 0.04;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='200' height='200' filter='url(%23n)' opacity='0.6'/></svg>");
+  }
+
+  .container { max-width: 880px; margin: 0 auto; position: relative; z-index: 1; }
+
+  /* SITE HEADER */
+  .site-header { text-align: center; margin-bottom: 24px; padding-bottom: 22px; position: relative; }
+  .site-header::after {
+    content: '✦'; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+    color: var(--gold-dim); font-size: 14px; background: var(--bg); padding: 0 14px;
+  }
+  .site-title {
+    font-family: 'Cinzel', serif; font-weight: 700;
+    font-size: clamp(26px, 5vw, 40px); letter-spacing: 0.12em;
+    color: var(--gold-bright); text-transform: uppercase;
+    text-shadow: 0 2px 12px rgba(201,168,118,0.2);
+    cursor: pointer; user-select: none; transition: color 0.2s;
+  }
+  .site-title:hover { color: var(--gold); }
+  .site-tagline { font-style: italic; color: var(--text-muted); font-size: 14px; letter-spacing: 0.1em; margin-top: 6px; }
+  .site-header .rule {
+    height: 1px; margin-top: 18px;
+    background: linear-gradient(90deg, transparent, var(--border-bright) 30%, var(--gold-dim) 50%, var(--border-bright) 70%, transparent);
+  }
+
+  /* NAV */
+  nav.tabs {
+    display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;
+    margin-bottom: 30px; padding: 6px;
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; box-shadow: var(--shadow);
+  }
+  nav.tabs button {
+    background: transparent; border: 1px solid transparent;
+    color: var(--text-muted); font-family: 'Cinzel', serif;
+    font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase;
+    padding: 11px 18px; cursor: pointer; transition: all 0.2s;
+    font-weight: 500; border-radius: 3px; white-space: nowrap;
+  }
+  nav.tabs button:hover { color: var(--gold); background: rgba(201,168,118,0.04); }
+  nav.tabs button.active {
+    background: linear-gradient(180deg, #3a2a18, #241a0f);
+    color: var(--gold-bright); border-color: var(--gold-dim);
+    box-shadow: var(--shadow-inset), 0 0 14px rgba(201,168,118,0.12);
+  }
+
+  /* PAGES */
+  .page { display: none; animation: fadeIn 0.25s ease; }
+  .page.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* PAGE HEADER */
+  .page-header { text-align: center; margin-bottom: 28px; }
+  .page-header h2 { font-family: 'Cinzel', serif; font-weight: 700; font-size: clamp(22px,4vw,30px); letter-spacing: 0.1em; color: var(--gold-bright); text-transform: uppercase; margin-bottom: 8px; }
+  .page-header p { color: var(--text-muted); font-style: italic; font-size: 15px; max-width: 520px; margin: 0 auto; }
+
+  /* HOME */
+  .home-intro { text-align: center; margin-bottom: 36px; }
+  .home-intro p { color: var(--text); font-size: 17px; max-width: 560px; margin: 0 auto 14px; }
+  .home-intro p.muted { color: var(--text-muted); font-style: italic; font-size: 15px; }
+  .calc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
+  .calc-card {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px;
+    padding: 24px 22px; cursor: pointer; transition: all 0.22s;
+    box-shadow: var(--shadow); text-align: left; display: flex; flex-direction: column; gap: 10px;
+  }
+  .calc-card:hover { border-color: var(--gold-dim); transform: translateY(-2px); box-shadow: var(--shadow), 0 0 20px rgba(201,168,118,0.08); }
+  .calc-card .icon { font-size: 28px; color: var(--gold); line-height: 1; margin-bottom: 4px; }
+  .calc-card h3 { font-family: 'Cinzel', serif; font-size: 17px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold-bright); font-weight: 600; }
+  .calc-card p { color: var(--text-muted); font-size: 14px; line-height: 1.55; }
+  .calc-card .badge { display: inline-block; font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--burgundy-bright); border: 1px solid var(--burgundy); padding: 3px 10px; border-radius: 2px; align-self: flex-start; font-weight: 500; }
+  .calc-card .open { align-self: flex-start; margin-top: 6px; font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); font-weight: 500; }
+  .calc-card:hover .open { color: var(--gold-bright); }
+
+  /* PLACEHOLDER */
+  .placeholder { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 64px 28px; text-align: center; box-shadow: var(--shadow); }
+  .placeholder .glyph { font-size: 48px; color: var(--gold-dim); margin-bottom: 18px; line-height: 1; }
+  .placeholder h3 { font-family: 'Cinzel', serif; font-size: 18px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); margin-bottom: 14px; font-weight: 600; }
+  .placeholder p { color: var(--text-muted); font-style: italic; max-width: 420px; margin: 0 auto; }
+
+  /* CARD */
+  .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 28px 28px 32px; box-shadow: var(--shadow); position: relative; }
+  .card::before { content: ''; position: absolute; inset: 4px; border: 1px solid var(--border); pointer-events: none; border-radius: 2px; opacity: 0.5; }
+
+  /* RESULT */
+  .result { padding: 24px 16px 22px; border-bottom: 1px solid var(--border); margin-bottom: 28px; }
+  .result-stats {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+    background: var(--border); border: 1px solid var(--border); border-radius: 3px; overflow: hidden;
+    margin-bottom: 18px;
+  }
+  .stat-box { background: var(--bg); padding: 20px 16px; text-align: center; }
+  .stat-number {
+    font-family: 'Cinzel', serif; font-weight: 800;
+    font-size: clamp(40px, 9vw, 72px); line-height: 1;
+    color: var(--gold-bright);
+    text-shadow: 0 0 30px rgba(240,212,150,0.12), 0 2px 0 rgba(0,0,0,0.5);
+  }
+  .stat-label { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.35em; color: var(--gold); text-transform: uppercase; margin-top: 8px; font-weight: 500; }
+  .result-meta { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; font-size: 14px; color: var(--text-muted); margin-bottom: 18px; }
+  .result-meta strong { color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .result-meta span { white-space: nowrap; }
+
+  /* COST BREAKDOWN */
+  .cost-box {
+    background: var(--bg-input); border: 1px solid var(--border); border-radius: 3px; padding: 16px 20px;
+  }
+  .cost-box .cost-title { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.35em; text-transform: uppercase; color: var(--gold); font-weight: 500; margin-bottom: 12px; }
+  .cost-rows { display: flex; flex-wrap: wrap; gap: 6px 28px; margin-bottom: 12px; font-size: 14px; color: var(--text-muted); }
+  .cost-rows span { white-space: nowrap; }
+  .cost-rows strong { color: var(--text); font-variant-numeric: tabular-nums; }
+  .cost-total { font-family: 'Cinzel', serif; font-size: 13px; letter-spacing: 0.08em; color: var(--gold); border-top: 1px solid var(--border); padding-top: 10px; display: flex; gap: 28px; flex-wrap: wrap; }
+  .cost-total span { white-space: nowrap; }
+  .cost-total strong { color: var(--gold-bright); font-variant-numeric: tabular-nums; }
+
+  /* INPUTS */
+  .inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 22px 28px; }
+  .input-group { display: flex; flex-direction: column; gap: 8px; }
+  .input-group.full { grid-column: 1 / -1; }
+  .input-group label.legend { font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 0.25em; color: var(--gold); text-transform: uppercase; font-weight: 600; }
+
+  select, input[type="number"] {
+    background: var(--bg-input); border: 1px solid var(--border); color: var(--text);
+    font-family: 'Crimson Pro', serif; font-size: 16px; padding: 10px 14px;
+    border-radius: 3px; box-shadow: var(--shadow-inset);
+    transition: border-color 0.2s, box-shadow 0.2s; outline: none; width: 100%;
+  }
+  select:focus, input[type="number"]:focus { border-color: var(--gold-dim); box-shadow: var(--shadow-inset), 0 0 0 2px rgba(201,168,118,0.15); }
+  select {
+    appearance: none; -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' stroke='%23c9a876' stroke-width='1.5' fill='none' stroke-linecap='round'/></svg>");
+    background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px;
+  }
+
+  .btn-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .btn-row button {
+    flex: 1; min-width: 0;
+    background: var(--bg-elevated); color: var(--text-muted); border: 1px solid var(--border);
+    font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 11px 8px; border-radius: 3px; cursor: pointer; transition: all 0.18s;
+    font-weight: 500; box-shadow: var(--shadow-inset);
+  }
+  .btn-row button:hover { color: var(--text); border-color: var(--border-bright); }
+  .btn-row button.active { background: linear-gradient(180deg, #3a2a18, #241a0f); color: var(--gold-bright); border-color: var(--gold-dim); box-shadow: var(--shadow-inset), 0 0 18px rgba(201,168,118,0.15); }
+
+  .toggles { display: flex; gap: 12px; flex-wrap: wrap; }
+  .toggle { flex: 1; min-width: 220px; display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 3px; cursor: pointer; transition: all 0.18s; box-shadow: var(--shadow-inset); user-select: none; }
+  .toggle:hover { border-color: var(--border-bright); }
+  .toggle input { display: none; }
+  .toggle .box { width: 18px; height: 18px; border: 1px solid var(--gold-dim); border-radius: 2px; background: var(--bg-input); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+  .toggle .box::after { content: ''; width: 10px; height: 10px; background: var(--gold-bright); border-radius: 1px; transform: scale(0); transition: transform 0.18s; box-shadow: 0 0 8px rgba(240,212,150,0.4); }
+  .toggle.checked .box { border-color: var(--gold); }
+  .toggle.checked .box::after { transform: scale(1); }
+  .toggle .info { display: flex; flex-direction: column; gap: 2px; }
+  .toggle .name { font-family: 'Cinzel', serif; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text); font-weight: 500; }
+  .toggle.checked .name { color: var(--gold-bright); }
+  .toggle .desc { font-size: 13px; color: var(--text-muted); font-style: italic; }
+
+  /* SETUP */
+  .setup-wrap { margin-top: 28px; }
+  .setup-toggle { width: 100%; background: transparent; border: 1px solid var(--border); color: var(--gold); font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: 0.3em; text-transform: uppercase; padding: 14px; cursor: pointer; transition: all 0.2s; border-radius: 3px; font-weight: 500; }
+  .setup-toggle:hover { border-color: var(--border-bright); color: var(--gold-bright); }
+  .setup-toggle .chev { display: inline-block; margin-left: 10px; transition: transform 0.25s; }
+  .setup-toggle.open .chev { transform: rotate(180deg); }
+  .setup-content { margin-top: 16px; padding: 28px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; display: none; }
+  .setup-content.open { display: block; }
+  .setup-actions { display: flex; justify-content: flex-end; margin-bottom: 24px; }
+  .reset-btn { background: transparent; border: 1px solid var(--burgundy); color: var(--burgundy-bright); font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; padding: 10px 18px; cursor: pointer; transition: all 0.2s; border-radius: 3px; font-weight: 500; }
+  .reset-btn:hover { background: var(--burgundy); color: var(--gold-bright); border-color: var(--burgundy-bright); }
+  .setup-section { margin-bottom: 28px; }
+  .setup-section:last-child { margin-bottom: 0; }
+  .setup-section h3 { font-family: 'Cinzel', serif; font-size: 14px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); font-weight: 600; }
+
+  /* RUNE EDITOR TABLE */
+  .rune-editor-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .rune-editor-table th { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); padding: 8px 12px; border-bottom: 1px solid var(--border); text-align: left; font-weight: 500; }
+  .rune-editor-table th:not(:first-child) { text-align: right; }
+  .rune-editor-table td { padding: 6px 12px; border-bottom: 1px solid rgba(61,47,31,0.5); color: var(--text); }
+  .rune-editor-table td:first-child { color: var(--gold); font-style: italic; }
+  .rune-editor-table td:not(:first-child) { text-align: right; }
+  .rune-editor-table tr:last-child td { border-bottom: none; }
+  .rune-editor-table input[type="number"] { width: 90px; padding: 5px 8px; font-size: 13px; text-align: right; font-variant-numeric: tabular-nums; }
+
+  .table-costs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .setup-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; background: var(--bg-input); border: 1px solid var(--border); border-radius: 3px; }
+  .setup-row .name { font-size: 14px; color: var(--text); }
+  .setup-row input[type="number"] { width: 120px; padding: 6px 10px; font-size: 14px; text-align: right; font-variant-numeric: tabular-nums; }
+
+  .voc-block { background: var(--bg-input); border: 1px solid var(--border); border-radius: 3px; padding: 14px 16px; margin-bottom: 10px; }
+  .voc-block .voc-name { font-family: 'Cinzel', serif; font-size: 13px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; font-weight: 600; }
+  .voc-tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .voc-tier label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 4px; letter-spacing: 0.05em; }
+  .voc-tier .tname { font-size: 13px; color: var(--text); font-style: italic; margin-bottom: 4px; }
+  .voc-tier input { width: 100%; padding: 6px 10px; font-size: 14px; text-align: right; font-variant-numeric: tabular-nums; }
+
+  footer { text-align: center; margin-top: 40px; font-size: 12px; color: var(--text-muted); font-style: italic; letter-spacing: 0.05em; }
+
+  @media (max-width: 600px) {
+    body { padding: 20px 12px 60px; font-size: 16px; }
+    .card { padding: 20px 16px 24px; }
+    .inputs { grid-template-columns: 1fr; gap: 18px; }
+    .result-stats { grid-template-columns: 1fr 1fr; }
+    .stat-number { font-size: clamp(32px, 9vw, 56px); }
+    .setup-content { padding: 18px 14px; }
+    .voc-tiers { grid-template-columns: 1fr; }
+    .toggle { min-width: 0; }
+    .btn-row button { font-size: 11px; padding: 10px 4px; }
+    nav.tabs button { padding: 9px 12px; font-size: 11px; letter-spacing: 0.15em; }
+    .rune-editor-table { font-size: 12px; }
+    .rune-editor-table input[type="number"] { width: 70px; }
+    .table-costs-grid { grid-template-columns: 1fr; }
+  }
+
+  /* REFERENCE TABLE */
+  .ref-table-wrap { margin-top: 28px; }
+  .ref-table-header { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .ref-table-title { font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); font-weight: 600; }
+  .ref-table-note { font-size: 13px; color: var(--text-muted); font-style: italic; }
+  .ref-table { width: 100%; border-collapse: collapse; background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; box-shadow: var(--shadow); font-size: 14px; }
+  .ref-table th { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); padding: 10px 14px; border-bottom: 1px solid var(--border); text-align: left; font-weight: 500; background: var(--bg-elevated); }
+  .ref-table th:not(:first-child) { text-align: right; }
+  .ref-table td { padding: 9px 14px; border-bottom: 1px solid rgba(61,47,31,0.4); color: var(--text); }
+  .ref-table td:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; color: var(--text-muted); }
+  .ref-table tr:last-child td { border-bottom: none; }
+  .ref-table tr.highlighted td { color: var(--gold-bright); }
+  .ref-table tr.highlighted td:first-child { color: var(--gold-bright); }
+  .ref-table tr.highlighted td:last-child { color: var(--gold-bright); font-weight: 700; }
+  .ref-table tr:hover td { background: rgba(201,168,118,0.03); }
+  @media (max-width: 600px) { .ref-table { font-size: 12px; } .ref-table td, .ref-table th { padding: 8px 10px; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="site-header">
+    <div class="site-title" id="siteTitle">Elderan Calculators</div>
+    <div class="site-tagline">Tools for the adventurers of Elderan</div>
+    <div class="rule"></div>
+  </header>
+
+  <nav class="tabs">
+    <button data-page="home" class="active">Home</button>
+    <button data-page="rune">Rune Table</button>
+    <button data-page="mana">Mana Costs</button>
+  </nav>
+
+  <!-- HOME -->
+  <section class="page active" id="page-home">
+    <div class="page-header">
+      <h2>Welcome, Adventurer</h2>
+      <p>A growing collection of fan-made calculators to help you plan your journey through Elderan.</p>
+    </div>
+    <div class="home-intro">
+      <p>Whether you're filling a rune table, planning your next hunt, or weighing the cost of an upgrade — pick a tool below to get started.</p>
+      <p class="muted">More calculators will be added over time.</p>
+    </div>
+    <div class="calc-grid">
+      <div class="calc-card" data-goto="rune">
+        <div class="icon">⟁</div>
+        <h3>Rune Table Calculator</h3>
+        <p>Estimate how many runes and charges your table will produce in 8 or 24 hours. Calculates total gold cost and cost per charge.</p>
+        <span class="open">Open Calculator →</span>
+      </div>
+      <div class="calc-card" data-goto="mana">
+        <div class="icon">✺</div>
+        <h3>Mana Cost Calculator</h3>
+        <p>Calculate the gold cost per cast and per target for any spell, based on your vocation and mana regen method.</p>
+        <span class="open">Open Calculator →</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- RUNE TABLE -->
+  <section class="page" id="page-rune">
+    <div class="page-header">
+      <h2>Rune Table Calculator</h2>
+      <p>Estimate the runes and charges your table will produce in 8 or 24 hours.</p>
+    </div>
+
+    <div class="card">
+      <div class="result">
+        <div class="result-stats">
+          <div class="stat-box">
+            <div class="stat-number" id="resultRunes">0</div>
+            <div class="stat-label" id="runesLabel">Blank Runes Required</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-number" id="resultCharges">0</div>
+            <div class="stat-label">Charges Obtained</div>
+          </div>
+        </div>
+        <div class="result-meta">
+          <span>Spirit regen <strong id="regenInfo">0/s</strong></span>
+          <span>Spirit cost <strong id="costInfo">0</strong></span>
+          <span>Total spirit <strong id="totalInfo">0</strong></span>
+        </div>
+        <div class="cost-box">
+          <div class="cost-title">Gold Cost Breakdown</div>
+          <div class="cost-rows">
+            <span>Table rental <strong id="costTable">0</strong> gp</span>
+            <span>Blank runes <strong id="costBlanks">0</strong> gp</span>
+          </div>
+          <div class="cost-total">
+            <span>Total cost <strong id="costTotal">0</strong> gp</span>
+            <span>Cost per charge <strong id="costPerCharge">—</strong> gp</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="inputs">
+        <div class="input-group">
+          <label class="legend">Rune</label>
+          <select id="runeSelect"></select>
+        </div>
+        <div class="input-group">
+          <label class="legend">Duration</label>
+          <div class="btn-row" id="durationRow">
+            <button data-value="8">8 Hours</button>
+            <button data-value="24">24 Hours</button>
+          </div>
+        </div>
+        <div class="input-group full">
+          <label class="legend">Vocation</label>
+          <div class="btn-row" id="vocationRow"></div>
+        </div>
+        <div class="input-group full">
+          <label class="legend">Promotion</label>
+          <div class="btn-row" id="promotionRow">
+            <button data-value="0">None</button>
+            <button data-value="1" id="promo1Btn">Promotion I</button>
+            <button data-value="2" id="promo2Btn">Promotion II</button>
+          </div>
+        </div>
+        <div class="input-group">
+          <label class="legend">Starting Spirit</label>
+          <input type="number" id="startingSpirit" min="0" value="0" step="1">
+        </div>
+        <div class="input-group full toggles">
+          <label class="toggle" id="carpetToggle">
+            <input type="checkbox" id="magicCarpet">
+            <span class="box"></span>
+            <span class="info">
+              <span class="name">Magic Carpet</span>
+              <span class="desc">+1 spirit regen per second</span>
+            </span>
+          </label>
+          <label class="toggle" id="stoneToggle">
+            <input type="checkbox" id="runeStone">
+            <span class="box"></span>
+            <span class="info">
+              <span class="name">Rune Stone</span>
+              <span class="desc">5% cheaper spirit cost</span>
+            </span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="setup-wrap">
+      <button class="setup-toggle" id="setupToggle">
+        Setup &amp; Data <span class="chev">▾</span>
+      </button>
+      <div class="setup-content" id="setupContent">
+        <div class="setup-actions">
+          <button class="reset-btn" id="resetBtn">↻ Reset to Defaults</button>
+        </div>
+
+        <div class="setup-section">
+          <h3>Table Rental Costs</h3>
+          <div class="table-costs-grid" id="tableCostEditor"></div>
+        </div>
+
+        <div class="setup-section">
+          <h3>Rune Data</h3>
+          <table class="rune-editor-table" id="runeEditor">
+            <thead>
+              <tr>
+                <th>Rune</th>
+                <th>Spirit Cost</th>
+                <th>Charges</th>
+                <th>Blank Cost (gp)</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="setup-section">
+          <h3>Vocation Spirit Regen (per second)</h3>
+          <div id="vocationEditor"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MANA COST CALCULATOR -->
+  <section class="page" id="page-mana">
+    <div class="page-header">
+      <h2>Mana Cost Calculator</h2>
+      <p>Calculate the gold cost per cast and per target for any spell, based on your mana regen method.</p>
+    </div>
+
+    <div class="card">
+      <div class="result">
+        <div class="result-stats">
+          <div class="stat-box">
+            <div class="stat-number" id="manaResultCast">&#8212;</div>
+            <div class="stat-label">Gold per Cast</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-number" id="manaResultTarget">&#8212;</div>
+            <div class="stat-label" id="manaTargetLabel">Gold per Target</div>
+          </div>
+        </div>
+        <div class="result-meta">
+          <span>Spell mana cost <strong id="manaSpellCost">&#8212;</strong></span>
+          <span>Regen cost <strong id="manaRegenRate">&#8212;</strong> gp/mana</span>
+          <span id="manaTargetsMeta" style="display:none">Targets <strong id="manaTargetsVal">1</strong></span>
+        </div>
+      </div>
+
+      <div class="inputs">
+        <div class="input-group full">
+          <label class="legend">Vocation</label>
+          <div class="btn-row" id="manaVocationRow"></div>
+        </div>
+
+        <div class="input-group">
+          <label class="legend">Mana Regen Method</label>
+          <select id="manaRegenSelect"></select>
+        </div>
+
+        <div class="input-group">
+          <label class="legend">Spell</label>
+          <select id="manaSpellSelect"></select>
+        </div>
+
+        <div class="input-group full" id="manaTargetsGroup" style="display:none">
+          <label class="legend">Average Targets Hit <span style="font-family:'Crimson Pro',serif;font-style:italic;font-size:13px;color:var(--text-muted);letter-spacing:0;text-transform:none;">(AoE spell)</span></label>
+          <input type="number" id="manaTargets" min="1" value="1" step="1">
+        </div>
+      </div>
+    </div>
+
+    <div class="setup-wrap">
+      <button class="setup-toggle" id="manaSetupToggle">
+        Setup &amp; Data <span class="chev">&#9662;</span>
+      </button>
+      <div class="setup-content" id="manaSetupContent">
+        <div class="setup-actions">
+          <button class="reset-btn" id="manaResetBtn">&#8635; Reset to Defaults</button>
+        </div>
+
+        <div class="setup-section">
+          <h3>Mana Regen Methods</h3>
+          <table class="rune-editor-table" id="manaRegenEditor">
+            <thead>
+              <tr>
+                <th>Method</th>
+                <th>Avg Mana</th>
+                <th>Price / Cast (gp)</th>
+                <th>gp / Mana</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="setup-section">
+          <h3>Spells</h3>
+          <table class="rune-editor-table" id="manaSpellEditor">
+            <thead>
+              <tr>
+                <th>Spell</th>
+                <th>Vocation</th>
+                <th>Type</th>
+                <th>Mana Cost</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="ref-table-wrap">
+      <div class="ref-table-header">
+        <span class="ref-table-title">Mana Regen Methods &#8212; Reference</span>
+        <span class="ref-table-note">Costs and mana returns used in calculations above</span>
+      </div>
+      <table class="ref-table" id="manaRefTable"></table>
+    </div>
+  </section>
+
+  <footer>Crafted with care for the people of Elderan ✦ Made by Langak</footer>
+</div>
+
+<script>
+// ============================================================
+// ROUTING
+// ============================================================
+const PAGES = ["home", "rune", "mana"];
+
+function showPage(name) {
+  if (!PAGES.includes(name)) name = "home";
+  PAGES.forEach(p => {
+    const el = document.getElementById("page-" + p);
+    if (el) el.classList.toggle("active", p === name);
+  });
+  document.querySelectorAll("nav.tabs button").forEach(b => {
+    b.classList.toggle("active", b.dataset.page === name);
+  });
+  try { if (location.hash !== "#" + name) history.replaceState(null, "", "#" + name); } catch(e) {}
+  try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch(e) {}
+}
+
+document.querySelectorAll("nav.tabs button").forEach(b => b.addEventListener("click", () => showPage(b.dataset.page)));
+document.querySelectorAll(".calc-card[data-goto]").forEach(card => {
+  card.addEventListener("click", () => { if (!card.querySelector(".badge")) showPage(card.dataset.goto); });
+});
+document.getElementById("siteTitle").addEventListener("click", () => showPage("home"));
+window.addEventListener("hashchange", () => showPage(location.hash.replace("#", "") || "home"));
+showPage(location.hash.replace("#", "") || "home");
+
+// ============================================================
+// DEFAULT DATA
+// ============================================================
+const DEFAULT_DATA = {
+  tableCosts: { "8": 45000, "24": 125000 },
+  runes: {
+    "Hmm":           { spirit: 70,  charges: 5,  blankCost: 15, vocations: ["Knight","Paladin","Druid","Sorcerer"] },
+    "Ih":            { spirit: 60,  charges: 1,  blankCost: 10, vocations: ["Knight","Paladin","Druid"]            },
+    "Uh":            { spirit: 90,  charges: 1,  blankCost: 20, vocations: ["Knight","Paladin","Druid"]            },
+    "Freeze Missile":{ spirit: 120, charges: 5,  blankCost: 20, vocations: ["Druid","Sorcerer"]                   },
+    "GFB / Ava":     { spirit: 110, charges: 2,  blankCost: 20, vocations: ["Druid","Sorcerer"]                   },
+    "Explosion":     { spirit: 180, charges: 3,  blankCost: 30, vocations: ["Knight","Paladin","Druid","Sorcerer"] },
+    "SD":            { spirit: 180, charges: 1,  blankCost: 30, vocations: ["Sorcerer"]                           },
+    "Ice SD":        { spirit: 180, charges: 1,  blankCost: 30, vocations: ["Druid","Sorcerer"]                   },
+    "Twin SD":       { spirit: 280, charges: 1,  blankCost: 30, vocations: ["Sorcerer"]                           },
+    "Elven Arrow":   { spirit: 60,  charges: 15, blankCost: 0,  vocations: ["Paladin"]                            },
+    "Golden Arrow":  { spirit: 90,  charges: 13, blankCost: 0,  vocations: ["Paladin"]                            },
+    "Titan Bolt":    { spirit: 110, charges: 15, blankCost: 0,  vocations: ["Paladin"]                            },
+    "Exp Arrow":     { spirit: 325, charges: 5,  blankCost: 0,  vocations: ["Paladin"]                            }
+  },
+  vocations: {
+    "Knight":   { base: 0.2,  promo1Name: "Elite Knight",     promo1: 0.4,  promo2Name: "Noble Knight",      promo2: 0.5  },
+    "Paladin":  { base: 0.33, promo1Name: "Royal Paladin",    promo1: 0.66, promo2Name: "Runic Paladin",     promo2: 0.75 },
+    "Druid":    { base: 0.4,  promo1Name: "Elder Druid",      promo1: 1.0,  promo2Name: "Ancient Druid",     promo2: 1.25 },
+    "Sorcerer": { base: 0.4,  promo1Name: "Master Sorcerer",  promo1: 1.0,  promo2Name: "Mystical Sorcerer", promo2: 1.25 }
+  }
+};
+
+const STORAGE_KEY = "elderan-rune-calc-v2";
+const clone = o => JSON.parse(JSON.stringify(o));
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return clone(DEFAULT_DATA);
+    const p = JSON.parse(raw);
+    return {
+      tableCosts: { ...DEFAULT_DATA.tableCosts, ...(p.tableCosts || {}) },
+      runes:      { ...DEFAULT_DATA.runes,      ...(p.runes      || {}) },
+      vocations:  { ...DEFAULT_DATA.vocations,  ...(p.vocations  || {}) }
+    };
+  } catch(e) { return clone(DEFAULT_DATA); }
+}
+function saveData() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+}
+
+let data = loadData();
+
+const state = {
+  vocation:      "Knight",
+  promotion:     0,
+  rune:          null,   // set after vocation-filter
+  magicCarpet:   false,
+  runeStone:     false,
+  startingSpirit: 0,
+  duration:      8
+};
+
+// ============================================================
+// HELPERS
+// ============================================================
+function runesForVocation(voc) {
+  return Object.keys(data.runes).filter(name => data.runes[name].vocations.includes(voc));
+}
+
+function currentRegen() {
+  const v = data.vocations[state.vocation];
+  if (!v) return 0;
+  let r = state.promotion === 0 ? v.base : state.promotion === 1 ? v.promo1 : v.promo2;
+  if (state.magicCarpet) r += 1;
+  return r;
+}
+
+function fmt(n) {
+  if (!isFinite(n)) return "—";
+  return Math.round(n).toLocaleString();
+}
+
+// ============================================================
+// CALCULATE
+// ============================================================
+function calculate() {
+  if (!state.rune || !data.runes[state.rune]) { clearResult(); return; }
+
+  const rune       = data.runes[state.rune];
+  const regen      = currentRegen();
+  const spiritCost = rune.spirit * (state.runeStone ? 0.95 : 1);
+  const durSec     = state.duration * 3600;
+  const total      = (Number(state.startingSpirit) || 0) + regen * durSec;
+  const runesProduced = spiritCost > 0 ? Math.floor(total / spiritCost) : 0;
+  const charges    = runesProduced * rune.charges;
+
+  const tableCost  = data.tableCosts[String(state.duration)] || 0;
+  const blanksCost = runesProduced * rune.blankCost;
+  const totalGold  = tableCost + blanksCost;
+  const perCharge  = charges > 0 ? totalGold / charges : null;
+
+  document.getElementById("resultRunes").textContent   = runesProduced.toLocaleString();
+  document.getElementById("runesLabel").textContent    = rune.blankCost === 0 ? "Spell Casts" : "Blank Runes Required";
+  document.getElementById("resultCharges").textContent = charges.toLocaleString();
+  document.getElementById("regenInfo").textContent     = regen.toFixed(2) + "/s";
+  document.getElementById("costInfo").textContent      = spiritCost % 1 === 0 ? spiritCost : spiritCost.toFixed(2);
+  document.getElementById("totalInfo").textContent     = Math.floor(total).toLocaleString();
+  document.getElementById("costTable").textContent     = tableCost.toLocaleString();
+  document.getElementById("costBlanks").textContent    = blanksCost.toLocaleString();
+  document.getElementById("costTotal").textContent     = totalGold.toLocaleString();
+  document.getElementById("costPerCharge").textContent = perCharge !== null ? Math.ceil(perCharge).toLocaleString() : "—";
+}
+
+function clearResult() {
+  ["resultRunes","resultCharges"].forEach(id => document.getElementById(id).textContent = "0");
+  document.getElementById("costTable").textContent     = "0";
+  document.getElementById("costBlanks").textContent    = "0";
+  document.getElementById("costTotal").textContent     = "0";
+  document.getElementById("costPerCharge").textContent = "—";
+  document.getElementById("regenInfo").textContent     = "0/s";
+  document.getElementById("costInfo").textContent      = "0";
+  document.getElementById("totalInfo").textContent     = "0";
+}
+
+// ============================================================
+// RENDER — rune select (filtered by vocation)
+// ============================================================
+function renderRuneSelect() {
+  const sel = document.getElementById("runeSelect");
+  const available = runesForVocation(state.vocation);
+  sel.innerHTML = "";
+
+  if (available.length === 0) {
+    const opt = document.createElement("option");
+    opt.textContent = "No runes available for this vocation";
+    sel.appendChild(opt);
+    state.rune = null;
+    return;
+  }
+
+  available.forEach(name => {
+    const r = data.runes[name];
+    const opt = document.createElement("option");
+    opt.value = name;
+    opt.textContent = `${name}  —  ${r.spirit} spirit · ${r.charges} charge${r.charges > 1 ? "s" : ""}`;
+    sel.appendChild(opt);
+  });
+
+  // keep previous rune if still available, else pick first
+  if (!available.includes(state.rune)) state.rune = available[0];
+  sel.value = state.rune;
+}
+
+// ============================================================
+// RENDER — vocation / promotion / duration / toggles
+// ============================================================
+function renderVocationRow() {
+  const row = document.getElementById("vocationRow");
+  row.innerHTML = "";
+  Object.keys(data.vocations).forEach(name => {
+    const b = document.createElement("button");
+    b.textContent = name;
+    b.dataset.value = name;
+    if (name === state.vocation) b.classList.add("active");
+    b.addEventListener("click", () => {
+      state.vocation = name;
+      renderVocationRow();
+      renderPromotionRow();
+      renderRuneSelect();
+      calculate();
+    });
+    row.appendChild(b);
+  });
+}
+
+function renderPromotionRow() {
+  const voc = data.vocations[state.vocation];
+  document.getElementById("promo1Btn").textContent = voc.promo1Name;
+  document.getElementById("promo2Btn").textContent = voc.promo2Name;
+  document.querySelectorAll("#promotionRow button").forEach(b => {
+    b.classList.toggle("active", Number(b.dataset.value) === state.promotion);
+  });
+}
+
+function renderDurationRow() {
+  document.querySelectorAll("#durationRow button").forEach(b => {
+    b.classList.toggle("active", Number(b.dataset.value) === state.duration);
+  });
+}
+
+function renderToggles() {
+  document.getElementById("carpetToggle").classList.toggle("checked", state.magicCarpet);
+  document.getElementById("stoneToggle").classList.toggle("checked", state.runeStone);
+}
+
+// ============================================================
+// RENDER — setup editors
+// ============================================================
+function renderTableCostEditor() {
+  const c = document.getElementById("tableCostEditor");
+  c.innerHTML = "";
+  [["8","8 Hour Table"],["24","24 Hour Table"]].forEach(([key, label]) => {
+    const row = document.createElement("div");
+    row.className = "setup-row";
+    row.innerHTML = `<span class="name">${label}</span><input type="number" step="1" min="0" value="${data.tableCosts[key]}" data-key="${key}"> <span style="color:var(--text-muted);font-size:13px;">gp</span>`;
+    c.appendChild(row);
+  });
+  c.querySelectorAll("input").forEach(inp => {
+    inp.addEventListener("input", e => {
+      const v = parseInt(e.target.value);
+      data.tableCosts[e.target.dataset.key] = isNaN(v) ? 0 : v;
+      saveData(); calculate();
+    });
+  });
+}
+
+function renderRuneEditor() {
+  const tbody = document.querySelector("#runeEditor tbody");
+  tbody.innerHTML = "";
+  Object.keys(data.runes).forEach(name => {
+    const r = data.runes[name];
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${name}</td>
+      <td><input type="number" step="any" min="0" value="${r.spirit}" data-rune="${name}" data-field="spirit"></td>
+      <td><input type="number" step="1" min="1" value="${r.charges}" data-rune="${name}" data-field="charges"></td>
+      <td><input type="number" step="1" min="0" value="${r.blankCost}" data-rune="${name}" data-field="blankCost"></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  tbody.querySelectorAll("input").forEach(inp => {
+    inp.addEventListener("input", e => {
+      const v = parseFloat(e.target.value);
+      data.runes[e.target.dataset.rune][e.target.dataset.field] = isNaN(v) ? 0 : v;
+      saveData();
+      renderRuneSelect();
+      calculate();
+    });
+  });
+}
+
+function renderVocationEditor() {
+  const c = document.getElementById("vocationEditor");
+  c.innerHTML = "";
+  Object.keys(data.vocations).forEach(name => {
+    const v = data.vocations[name];
+    const block = document.createElement("div");
+    block.className = "voc-block";
+    block.innerHTML = `
+      <div class="voc-name">${name}</div>
+      <div class="voc-tiers">
+        <div class="voc-tier"><label>Base</label><div class="tname">${name}</div><input type="number" step="any" min="0" value="${v.base}" data-voc="${name}" data-tier="base"></div>
+        <div class="voc-tier"><label>Promotion I</label><div class="tname">${v.promo1Name}</div><input type="number" step="any" min="0" value="${v.promo1}" data-voc="${name}" data-tier="promo1"></div>
+        <div class="voc-tier"><label>Promotion II</label><div class="tname">${v.promo2Name}</div><input type="number" step="any" min="0" value="${v.promo2}" data-voc="${name}" data-tier="promo2"></div>
+      </div>
+    `;
+    c.appendChild(block);
+  });
+  c.querySelectorAll("input").forEach(inp => {
+    inp.addEventListener("input", e => {
+      const val = parseFloat(e.target.value);
+      data.vocations[e.target.dataset.voc][e.target.dataset.tier] = isNaN(val) ? 0 : val;
+      saveData(); calculate();
+    });
+  });
+}
+
+// ============================================================
+// EVENT WIRING — calculator
+// ============================================================
+document.getElementById("runeSelect").addEventListener("change", e => {
+  state.rune = e.target.value; calculate();
+});
+document.getElementById("startingSpirit").addEventListener("input", e => {
+  state.startingSpirit = parseFloat(e.target.value) || 0; calculate();
+});
+document.querySelectorAll("#durationRow button").forEach(b => b.addEventListener("click", () => {
+  state.duration = Number(b.dataset.value); renderDurationRow(); calculate();
+}));
+document.querySelectorAll("#promotionRow button").forEach(b => b.addEventListener("click", () => {
+  state.promotion = Number(b.dataset.value); renderPromotionRow(); calculate();
+}));
+document.getElementById("carpetToggle").addEventListener("click", e => {
+  e.preventDefault(); state.magicCarpet = !state.magicCarpet; renderToggles(); calculate();
+});
+document.getElementById("stoneToggle").addEventListener("click", e => {
+  e.preventDefault(); state.runeStone = !state.runeStone; renderToggles(); calculate();
+});
+document.getElementById("setupToggle").addEventListener("click", () => {
+  const btn = document.getElementById("setupToggle");
+  const content = document.getElementById("setupContent");
+  const open = content.classList.toggle("open");
+  btn.classList.toggle("open", open);
+});
+document.getElementById("resetBtn").addEventListener("click", () => {
+  if (!confirm("Reset all data to original defaults?")) return;
+  data = clone(DEFAULT_DATA);
+  try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+  renderAll();
+});
+
+// ============================================================
+// MANA CALCULATOR DATA
+// ============================================================
+const DEFAULT_MANA_DATA = {
+  regenMethods: [
+    { name: "Small Mana",                 avgMana: 100,   priceCast: 65,    gpPerMana: 0.65 },
+    { name: "Big Mana",                   avgMana: 150,   priceCast: 135,   gpPerMana: 0.90 },
+    { name: "Small Keg",                  avgMana: 200,   priceCast: 203,   gpPerMana: 1.02 },
+    { name: "Big Keg",                    avgMana: 200,   priceCast: 206.6, gpPerMana: 1.03 },
+    { name: "Enchanted Mana Pot (24h)",   avgMana: 1300,  priceCast: 1275,  gpPerMana: 0.98 },
+    { name: "Big Enchanted Mana Pot (24h)",avgMana:2000,  priceCast: 1975,  gpPerMana: 0.99 },
+    { name: "Enchanted Mana Pot (8h)",    avgMana: 1300,  priceCast: 1400,  gpPerMana: 1.08 },
+    { name: "Big Enchanted Mana Pot (8h)",avgMana: 2000,  priceCast: 2100,  gpPerMana: 1.05 },
+    { name: "Velvet Boots",               avgMana: 14400, priceCast: 10000, gpPerMana: 0.69 },
+    { name: "Life Ring (npc price)",      avgMana: 1600,  priceCast: 900,   gpPerMana: 0.56 },
+    { name: "Ring of Healing (npc price)",avgMana: 1800,  priceCast: 2000,  gpPerMana: 1.11 }
+  ],
+  spells: {
+    "Paladin": [
+      { name: "Holy Grenade",   mana: 25,  aoe: false },
+      { name: "Throwing Knife", mana: 30,  aoe: false },
+      { name: "Holy Rain",      mana: 150, aoe: true  },
+      { name: "Hail of Arrows", mana: 165, aoe: true  },
+      { name: "Bullseye",       mana: 225, aoe: false },
+      { name: "Divine Healing", mana: 190, aoe: true  }
+    ],
+    "Druid": [
+      { name: "Elemental Strikes",   mana: 20,   aoe: false },
+      { name: "Spore Flick",         mana: 30,   aoe: true  },
+      { name: "Poison Wave",         mana: 220,  aoe: true  },
+      { name: "Poison Lash",         mana: 105,  aoe: true  },
+      { name: "Ice Wave",            mana: 340,  aoe: true  },
+      { name: "Poison Storm",        mana: 950,  aoe: true  },
+      { name: "Greater Poison Lash", mana: 215,  aoe: true  },
+      { name: "Frost Storm",         mana: 1050, aoe: true  },
+      { name: "Redemption",          mana: 100,  aoe: false },
+      { name: "Enhanced Heal Friend",mana: 130,  aoe: false },
+      { name: "Heal Friend",         mana: 80,   aoe: false }
+    ],
+    "Knight": [
+      { name: "Blunt Strike",       mana: 50,  aoe: false },
+      { name: "Ground Stomp",       mana: 140, aoe: true  },
+      { name: "Frontal Strike",     mana: 250, aoe: true  },
+      { name: "Strong Berserk",     mana: 350, aoe: true  },
+      { name: "Executioner",        mana: 320, aoe: false },
+      { name: "Physical Shockwave", mana: 650, aoe: true  }
+    ],
+    "Sorcerer": [
+      { name: "Elemental Strikes",       mana: 20,   aoe: false },
+      { name: "Cinder Snap",             mana: 30,   aoe: true  },
+      { name: "Magic Bullet",            mana: 30,   aoe: false },
+      { name: "Energy Beam",             mana: 100,  aoe: true  },
+      { name: "Fire Wave",               mana: 250,  aoe: true  },
+      { name: "Great Energy Beam",       mana: 200,  aoe: true  },
+      { name: "Hell Chain",              mana: 85,   aoe: true  },
+      { name: "Tempest Chain",           mana: 110,  aoe: true  },
+      { name: "Energy Wave",             mana: 350,  aoe: true  },
+      { name: "Thunder Outburst",        mana: 705,  aoe: true  },
+      { name: "Ultimate Explosion",      mana: 850,  aoe: true  },
+      { name: "Greater Hell Chain",      mana: 160,  aoe: true  },
+      { name: "Death Wave",              mana: 400,  aoe: true  },
+      { name: "Greater Tempest Chain",   mana: 225,  aoe: true  },
+      { name: "Armagedon",               mana: 1080, aoe: true  },
+      { name: "Chain of the Unhollowed", mana: 245,  aoe: true  }
+    ]
+  }
+};
+
+const MANA_STORAGE_KEY = "elderan-mana-calc-v1";
+
+function loadManaData() {
+  try {
+    const raw = localStorage.getItem(MANA_STORAGE_KEY);
+    if (!raw) return clone(DEFAULT_MANA_DATA);
+    const p = JSON.parse(raw);
+    return {
+      regenMethods: p.regenMethods || clone(DEFAULT_MANA_DATA.regenMethods),
+      spells:       p.spells       || clone(DEFAULT_MANA_DATA.spells)
+    };
+  } catch(e) { return clone(DEFAULT_MANA_DATA); }
+}
+function saveManaData() {
+  try { localStorage.setItem(MANA_STORAGE_KEY, JSON.stringify(manaData)); } catch(e) {}
+}
+
+let manaData = loadManaData();
+
+const manaState = {
+  vocation: "Knight",
+  regenIdx: 0,
+  spellIdx: 0,
+  targets:  1
+};
+
+// ============================================================
+// MANA CALCULATOR — CALCULATE
+// ============================================================
+function manaCalculate() {
+  const spells = manaData.spells[manaState.vocation] || [];
+  const spell  = spells[manaState.spellIdx];
+  const regen  = manaData.regenMethods[manaState.regenIdx];
+
+  if (!spell || !regen) return;
+
+  const isAoe    = spell.aoe;
+  const targets  = isAoe ? (parseInt(manaState.targets) || 1) : 1;
+  const costCast = spell.mana * regen.gpPerMana;
+  const costTarget = costCast / targets;
+
+  document.getElementById("manaResultCast").textContent   = Math.ceil(costCast).toLocaleString();
+  document.getElementById("manaResultTarget").textContent = Math.ceil(costTarget).toLocaleString();
+  document.getElementById("manaTargetLabel").textContent  = isAoe ? "Gold per Target" : "Gold per Cast";
+  document.getElementById("manaSpellCost").textContent    = spell.mana.toLocaleString();
+  document.getElementById("manaRegenRate").textContent    = regen.gpPerMana.toFixed(2);
+
+  // show/hide targets input and meta
+  const show = isAoe;
+  document.getElementById("manaTargetsGroup").style.display = show ? "" : "none";
+  document.getElementById("manaTargetsMeta").style.display  = show ? "" : "none";
+  document.getElementById("manaTargetsVal").textContent      = targets;
+  // hide second stat box for ST (redundant with first)
+  document.querySelector("#page-mana .result-stats .stat-box:last-child").style.display = isAoe ? "" : "none";
+}
+
+// ============================================================
+// MANA CALCULATOR — RENDER
+// ============================================================
+function renderManaVocationRow() {
+  const row = document.getElementById("manaVocationRow");
+  row.innerHTML = "";
+  Object.keys(manaData.spells).forEach(name => {
+    const b = document.createElement("button");
+    b.textContent = name;
+    b.dataset.value = name;
+    if (name === manaState.vocation) b.classList.add("active");
+    b.addEventListener("click", () => {
+      manaState.vocation = name;
+      manaState.spellIdx = 0;
+      renderManaVocationRow();
+      renderManaSpellSelect();
+      manaCalculate();
+    });
+    row.appendChild(b);
+  });
+}
+
+function renderManaRegenSelect() {
+  const sel = document.getElementById("manaRegenSelect");
+  sel.innerHTML = "";
+  manaData.regenMethods.forEach((m, i) => {
+    const opt = document.createElement("option");
+    opt.value = i;
+    opt.textContent = `${m.name}  —  ${m.gpPerMana.toFixed(2)} gp/mana`;
+    sel.appendChild(opt);
+  });
+  sel.value = manaState.regenIdx;
+}
+
+function renderManaSpellSelect() {
+  const sel = document.getElementById("manaSpellSelect");
+  const spells = manaData.spells[manaState.vocation] || [];
+  sel.innerHTML = "";
+  spells.forEach((s, i) => {
+    const opt = document.createElement("option");
+    opt.value = i;
+    opt.textContent = `${s.name}  —  ${s.mana} mana  [${s.aoe ? "AoE" : "Single Target"}]`;
+    sel.appendChild(opt);
+  });
+  if (manaState.spellIdx >= spells.length) manaState.spellIdx = 0;
+  sel.value = manaState.spellIdx;
+}
+
+function renderManaRegenEditor() {
+  const tbody = document.querySelector("#manaRegenEditor tbody");
+  tbody.innerHTML = "";
+  manaData.regenMethods.forEach((m, i) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${m.name}</td>
+      <td><input type="number" step="1" min="0" value="${m.avgMana}" data-idx="${i}" data-field="avgMana"></td>
+      <td><input type="number" step="any" min="0" value="${m.priceCast}" data-idx="${i}" data-field="priceCast"></td>
+      <td><input type="number" step="any" min="0" value="${m.gpPerMana}" data-idx="${i}" data-field="gpPerMana"></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  tbody.querySelectorAll("input").forEach(inp => {
+    inp.addEventListener("input", e => {
+      const v = parseFloat(e.target.value);
+      manaData.regenMethods[e.target.dataset.idx][e.target.dataset.field] = isNaN(v) ? 0 : v;
+      saveManaData();
+      renderManaRegenSelect();
+      manaCalculate();
+    });
+  });
+}
+
+function renderManaSpellEditor() {
+  const tbody = document.querySelector("#manaSpellEditor tbody");
+  tbody.innerHTML = "";
+  Object.keys(manaData.spells).forEach(voc => {
+    manaData.spells[voc].forEach((s, i) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${s.name}</td>
+        <td style="color:var(--text-muted);font-style:italic">${voc}</td>
+        <td style="color:${s.aoe ? '#5a9e3a' : '#c97a2a'}">${s.aoe ? "AoE" : "Single Target"}</td>
+        <td><input type="number" step="1" min="0" value="${s.mana}" data-voc="${voc}" data-idx="${i}" data-field="mana"></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  });
+  tbody.querySelectorAll("input").forEach(inp => {
+    inp.addEventListener("input", e => {
+      const v = parseFloat(e.target.value);
+      manaData.spells[e.target.dataset.voc][e.target.dataset.idx][e.target.dataset.field] = isNaN(v) ? 0 : v;
+      saveManaData();
+      renderManaSpellSelect();
+      manaCalculate();
+    });
+  });
+}
+
+// EVENT WIRING — mana calculator
+document.getElementById("manaRegenSelect").addEventListener("change", e => {
+  manaState.regenIdx = parseInt(e.target.value);
+  manaCalculate();
+});
+document.getElementById("manaSpellSelect").addEventListener("change", e => {
+  manaState.spellIdx = parseInt(e.target.value);
+  manaCalculate();
+});
+document.getElementById("manaTargets").addEventListener("input", e => {
+  manaState.targets = parseInt(e.target.value) || 1;
+  manaCalculate();
+});
+document.getElementById("manaSetupToggle").addEventListener("click", () => {
+  const btn = document.getElementById("manaSetupToggle");
+  const content = document.getElementById("manaSetupContent");
+  const open = content.classList.toggle("open");
+  btn.classList.toggle("open", open);
+});
+document.getElementById("manaResetBtn").addEventListener("click", () => {
+  if (!confirm("Reset all mana data to original defaults?")) return;
+  manaData = clone(DEFAULT_MANA_DATA);
+  try { localStorage.removeItem(MANA_STORAGE_KEY); } catch(e) {}
+  renderManaAll();
+});
+
+function renderManaRefTable() {
+  const table = document.getElementById("manaRefTable");
+  if (!table) return;
+  // Highlighted rows (best value) — Life Ring and Small Mana
+  const highlighted = ["Life Ring (npc price)", "Small Mana"];
+  table.innerHTML = `
+    <thead>
+      <tr>
+        <th>Method</th>
+        <th>Avg Mana</th>
+        <th>Price / Cast (gp)</th>
+        <th>gp / Mana</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${manaData.regenMethods.map(m => `
+        <tr class="${highlighted.includes(m.name) ? 'highlighted' : ''}">
+          <td>${m.name}${highlighted.includes(m.name) ? ' &#9733;' : ''}</td>
+          <td>${m.avgMana.toLocaleString()}</td>
+          <td>${m.priceCast.toLocaleString()}</td>
+          <td>${m.gpPerMana.toFixed(2)}</td>
+        </tr>
+      `).join('')}
+    </tbody>
+  `;
+}
+
+function renderManaAll() {
+  renderManaVocationRow();
+  renderManaRegenSelect();
+  renderManaSpellSelect();
+  renderManaRegenEditor();
+  renderManaSpellEditor();
+  renderManaRefTable();
+  manaCalculate();
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function renderAll() {
+  renderRuneSelect();
+  renderVocationRow();
+  renderPromotionRow();
+  renderDurationRow();
+  renderToggles();
+  renderTableCostEditor();
+  renderRuneEditor();
+  renderVocationEditor();
+  calculate();
+}
+renderAll();
+renderManaAll();
+</script>
+</body>
+</html>
