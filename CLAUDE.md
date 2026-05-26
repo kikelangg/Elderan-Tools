@@ -218,7 +218,7 @@ costPerTarget = ceil(costPerCast / targets)   // targets=1 for single-target
 | Gold | Frostfang | Ice Dragons |
 | Gold | Zhandramon | Warlocks |
 | Gold | Ghost King | Dark Riders |
-| Gold | Bloodsaw | Wicker Blacksmiths |
+| Gold | Doctor Bloodsaw | Wicker Blacksmiths |
 | Gold | Tormentor | Executioners |
 | Gold | Beelzebub | Demons |
 | Mythril | Dracolich | Undead Dragons |
