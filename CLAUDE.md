@@ -1,14 +1,14 @@
 # Elderan Calculators — CLAUDE.md
 
 Fan-made single-page web app for the MMORPG **Elderan Online**.
-Hosted on GitHub Pages. No build step, no framework, no dependencies beyond two Google Fonts loaded via CDN.
+Hosted on GitHub Pages. No build step, no framework. Dependencies: two Google Fonts via CDN + Firebase JS SDK v10.12.0 (compat) via CDN (added for Boss Counter).
 
 ---
 
 ## File Structure
 
 ```
-index.html   — the entire app (HTML + CSS + JS, ~1173 lines)
+index.html   — the entire app (HTML + CSS + JS, ~1980 lines)
 CLAUDE.md    — this file
 ```
 
@@ -25,6 +25,7 @@ Hash-based SPA routing. Pages are `<section class="page">` elements toggled with
 #home   → page-home
 #rune   → page-rune
 #mana   → page-mana
+#boss   → page-boss
 ```
 
 `showPage(name)` handles all routing. The site title and nav tabs call it. Home cards navigate via `data-goto` attribute.
@@ -35,6 +36,27 @@ Hash-based SPA routing. Pages are `<section class="page">` elements toggled with
 - Mana calculator: key `elderan-mana-calc-v1`
 
 On load, saved data is merged with defaults so new default entries are always picked up. Reset buttons call `localStorage.removeItem` and reload from defaults.
+
+The Boss Counter uses a hybrid persistence model — see section 3 below.
+
+### Firebase
+The app uses Firebase Firestore (compat SDK v10.12.0) for cloud storage in the Boss Counter. The `FIREBASE_CONFIG` object is in the `<script>` block. Firebase project: `elderan-tools`. If the `apiKey` field equals `"YOUR_API_KEY"`, Firebase is skipped and the tracker runs in guest-only mode.
+
+**Firestore collection:** `bossAccounts/{accountName}` — one document per account.
+
+**Firestore security rules** (set in Firebase console, not in code):
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /bossAccounts/{accountName} {
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if request.resource.data.pin == resource.data.pin;
+    }
+  }
+}
+```
 
 ---
 
@@ -147,6 +169,85 @@ costPerTarget = ceil(costPerCast / targets)   // targets=1 for single-target
 
 ---
 
+### 3. Boss Attempt Counter (`#boss`)
+
+**Purpose:** Track how many times a boss spawns vs. an enraged creature (base mob), per boss and per character.
+
+**Account system:**
+- Accounts are identified by a name (lowercased, spaces → underscores) + 4-digit PIN.
+- PIN is stored in plaintext in the Firestore document (security is intentionally minimal).
+- Session persists in `localStorage` key `elderan-boss-session-v1` so users stay logged in across page loads.
+- Guest mode stores data in `localStorage` key `elderan-boss-guest-v1` with no account required.
+
+**Characters:** Each account holds an array of characters with fields `{ id, name, vocation, server }`. Vocation is one of: Knight / Paladin / Druid / Sorcerer.
+
+**Attempts:** Stored as an array on the account document (newest first): `{ id, charId, boss, tier, creature, outcome, ts }`. `outcome` is `"boss"` or `"enraged"`. `charId` is `null` for guest mode.
+
+**Firestore document shape:**
+```json
+{
+  "name": "langak",
+  "pin": "1234",
+  "createdAt": 1234567890000,
+  "characters": [{ "id": "abc", "name": "Langak", "vocation": "Knight", "server": "Elderan" }],
+  "attempts": [{ "id": "xyz", "charId": "abc", "boss": "Mooh", "tier": "Bronze", "creature": "Minotaurs", "outcome": "boss", "ts": 1234567890000 }]
+}
+```
+
+**Stats:** Grouped by tier, shows Attempts / Boss wins / Enraged / Success %. Filterable by character.
+
+**Boss data — 4 tiers:**
+
+| Tier | Boss | Creature |
+|---|---|---|
+| Bronze | Mooh | Minotaurs |
+| Bronze | Grushnag | Weak Orcs |
+| Bronze | General Pincher | Sand Scorpions |
+| Bronze | Big Smasher | Cyclops |
+| Bronze | Fernfang | Monks |
+| Bronze | Horned Fox | Strong Minotaurs |
+| Bronze | Dharalion | Elf Arcanists |
+| Silver | Necropharus | Necromancers |
+| Silver | Miralax | Dragons |
+| Silver | Old Widow | Giant Spiders |
+| Silver | Avatar | Heroes |
+| Silver | Demodras | Dragon Lords |
+| Silver | Lernaean | Hydras |
+| Gold | Evil Eye | Elder Beholders |
+| Gold | Stoneskin | Behemoths |
+| Gold | Frostfang | Ice Dragons |
+| Gold | Zhandramon | Warlocks |
+| Gold | Ghost King | Dark Riders |
+| Gold | Bloodsaw | Wicker Blacksmiths |
+| Gold | Tormentor | Executioners |
+| Gold | Beelzebub | Demons |
+| Mythril | Dracolich | Undead Dragons |
+| Mythril | Fluffy | Hellhounds |
+| Mythril | Blazefang | Inferno Cobra |
+| Mythril | Azurefang | Azure Cobra |
+| Mythril | Scythelord | Praying Mantis |
+| Mythril | Juggernaut | Colossus |
+| Mythril | Skyfang | Cloud Cobra |
+| Mythril | The Jungle Horror | Chirak |
+| Mythril | Lion King | Sky Lion |
+| Mythril | Opera Phantom | Glacier Phantom |
+
+**New UI components introduced:**
+- `.boss-banner` — guest mode prompt with account creation CTA
+- `.account-panel` — logged-in header showing account name + character/sign-out actions
+- `.action-btn` / `.action-btn.primary` / `.action-btn.danger` — general-purpose buttons used across boss tracker
+- `.tier-badge` — inline colored badge; variants: `.tier-Bronze`, `.tier-Silver`, `.tier-Gold`, `.tier-Mythril`
+- `.outcome-btn` / `.selected-boss` / `.selected-enraged` — large toggle buttons for logging outcome
+- `.log-btn` — full-width submit button with disabled and `.logged` (confirmation flash) states
+- `.boss-stats-table` — stats grid with tier group headers
+- `.char-filter` — tab row for filtering stats by character
+- `.history-list` / `.history-item` — recent attempts log
+- `.modal-overlay` / `.modal` — fullscreen overlay modals (account + character creation)
+
+**Modals:** `#bossAccountModal` (create/sign in, mode toggled at runtime) · `#bossCharModal` (add character)
+
+---
+
 ## UI Patterns
 
 - **Cards** (`.card`) have a double-border effect via `::before` pseudo-element.
@@ -185,7 +286,7 @@ costPerTarget = ceil(costPerCast / targets)   // targets=1 for single-target
 3. Add a card in `#page-home .calc-grid` with `data-goto="mypage"`.
 4. Add `"mypage"` to the `PAGES` array in the routing JS.
 5. Add a `DEFAULT_*_DATA` object, a storage key, and `render*All()` / `calculate*()` functions following the same pattern as the existing calculators.
-6. Call `render*All()` at the bottom of the script alongside `renderAll()` and `renderManaAll()`.
+6. Call `render*All()` at the bottom of the script alongside `renderAll()`, `renderManaAll()`, and `initBossTracker()`.
 
 ---
 

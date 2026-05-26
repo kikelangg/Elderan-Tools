@@ -274,7 +274,128 @@
   .ref-table tr.highlighted td:last-child { color: var(--gold-bright); font-weight: 700; }
   .ref-table tr:hover td { background: rgba(201,168,118,0.03); }
   @media (max-width: 600px) { .ref-table { font-size: 12px; } .ref-table td, .ref-table th { padding: 8px 10px; } }
+
+  /* ===================== BOSS TRACKER ===================== */
+  .boss-banner {
+    background: var(--bg-card); border: 1px solid var(--gold-dim); border-radius: 4px;
+    padding: 16px 22px; margin-bottom: 24px; display: flex; align-items: center;
+    gap: 16px; flex-wrap: wrap; box-shadow: 0 0 18px rgba(201,168,118,0.08);
+  }
+  .boss-banner .banner-icon { font-size: 22px; color: var(--gold); flex-shrink: 0; }
+  .boss-banner .banner-text { flex: 1; min-width: 200px; }
+  .boss-banner .banner-text strong { font-family: 'Cinzel', serif; font-size: 13px; letter-spacing: 0.1em; color: var(--gold-bright); display: block; margin-bottom: 3px; }
+  .boss-banner .banner-text p { font-size: 13px; color: var(--text-muted); font-style: italic; margin: 0; }
+  .boss-banner .banner-actions { display: flex; gap: 8px; flex-shrink: 0; flex-wrap: wrap; }
+
+  .account-panel {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px;
+    padding: 14px 20px; margin-bottom: 24px; display: flex; align-items: center;
+    gap: 16px; flex-wrap: wrap;
+  }
+  .account-panel .acct-name { font-family: 'Cinzel', serif; font-size: 15px; letter-spacing: 0.1em; color: var(--gold-bright); flex: 1; }
+  .account-panel .acct-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .action-btn {
+    background: var(--bg-elevated); border: 1px solid var(--border); color: var(--gold);
+    font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
+    padding: 9px 16px; cursor: pointer; transition: all 0.18s; border-radius: 3px; font-weight: 500; white-space: nowrap;
+  }
+  .action-btn:hover { border-color: var(--gold-dim); color: var(--gold-bright); }
+  .action-btn.primary { background: linear-gradient(180deg, #3a2a18, #241a0f); border-color: var(--gold-dim); color: var(--gold-bright); }
+  .action-btn.primary:hover { box-shadow: 0 0 14px rgba(201,168,118,0.15); }
+  .action-btn.danger { border-color: var(--burgundy); color: var(--burgundy-bright); }
+  .action-btn.danger:hover { background: var(--burgundy); color: var(--gold-bright); border-color: var(--burgundy-bright); }
+
+  .tier-badge { display: inline-block; font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; padding: 2px 8px; border-radius: 2px; font-weight: 600; white-space: nowrap; }
+  .tier-Bronze  { color: #d4955a; border: 1px solid #7a4f22; background: rgba(205,127,50,0.1); }
+  .tier-Silver  { color: #c8c8c8; border: 1px solid #777; background: rgba(192,192,192,0.08); }
+  .tier-Gold    { color: #f0c800; border: 1px solid #9a8000; background: rgba(255,215,0,0.08); }
+  .tier-Mythril { color: #7ec8e3; border: 1px solid #2a7a9a; background: rgba(126,200,227,0.08); }
+
+  .outcome-row { display: flex; gap: 10px; margin-top: 4px; }
+  .outcome-btn {
+    flex: 1; padding: 18px 10px; border-radius: 3px; cursor: pointer;
+    font-family: 'Cinzel', serif; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase;
+    border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-muted);
+    transition: all 0.18s; box-shadow: var(--shadow-inset); font-weight: 500; text-align: center;
+  }
+  .outcome-btn:hover { border-color: var(--border-bright); color: var(--text); }
+  .outcome-btn.selected-boss    { border-color: #4a7a2a; background: rgba(74,122,42,0.14); color: #8ac85a; box-shadow: var(--shadow-inset), 0 0 14px rgba(74,122,42,0.2); }
+  .outcome-btn.selected-enraged { border-color: var(--burgundy-bright); background: rgba(114,41,41,0.14); color: #e07070; box-shadow: var(--shadow-inset), 0 0 14px rgba(114,41,41,0.2); }
+
+  .log-btn {
+    width: 100%; margin-top: 20px; padding: 16px; background: linear-gradient(180deg, #3a2a18, #241a0f);
+    border: 1px solid var(--gold-dim); color: var(--gold-bright); font-family: 'Cinzel', serif;
+    font-size: 13px; letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer;
+    transition: all 0.2s; border-radius: 3px; box-shadow: var(--shadow-inset); font-weight: 600;
+  }
+  .log-btn:hover:not(:disabled) { box-shadow: var(--shadow-inset), 0 0 20px rgba(201,168,118,0.2); border-color: var(--gold); color: #fff8e8; }
+  .log-btn:disabled { opacity: 0.35; cursor: default; }
+  .log-btn.logged { border-color: #4a7a2a; color: #8ac85a; }
+
+  .card-title { font-family: 'Cinzel', serif; font-size: 13px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); font-weight: 600; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .card + .card { margin-top: 24px; }
+
+  .boss-stats-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
+  .boss-stats-header h3 { font-family: 'Cinzel', serif; font-size: 13px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); font-weight: 600; }
+  .char-filter { display: flex; gap: 6px; flex-wrap: wrap; }
+  .char-filter button { background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-muted); font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; padding: 7px 14px; cursor: pointer; transition: all 0.18s; border-radius: 3px; }
+  .char-filter button.active { background: linear-gradient(180deg, #3a2a18, #241a0f); color: var(--gold-bright); border-color: var(--gold-dim); }
+  .char-filter button:hover:not(.active) { border-color: var(--border-bright); color: var(--text); }
+
+  .boss-stats-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .boss-stats-table th { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); padding: 9px 12px; border-bottom: 1px solid var(--border); text-align: left; font-weight: 500; background: var(--bg-elevated); }
+  .boss-stats-table th:not(:first-child):not(:nth-child(2)) { text-align: right; }
+  .boss-stats-table td { padding: 8px 12px; border-bottom: 1px solid rgba(61,47,31,0.4); }
+  .boss-stats-table td:not(:first-child):not(:nth-child(2)) { text-align: right; font-variant-numeric: tabular-nums; color: var(--text-muted); }
+  .boss-stats-table tr:last-child td { border-bottom: none; }
+  .boss-stats-table tr:hover td { background: rgba(201,168,118,0.025); }
+  .boss-stats-table .tier-group-header td { background: var(--bg-elevated); font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); font-weight: 600; padding: 7px 12px; border-bottom: 1px solid var(--border); }
+  .rate-high { color: #8ac85a; font-weight: 600; }
+  .rate-mid  { color: #e0c060; font-weight: 600; }
+  .rate-low  { color: #e07070; font-weight: 600; }
+  .rate-zero { color: var(--text-muted); font-style: italic; }
+
+  .history-list { list-style: none; }
+  .history-item { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid rgba(61,47,31,0.4); font-size: 14px; flex-wrap: wrap; }
+  .history-item:last-child { border-bottom: none; }
+  .history-boss { color: var(--text); font-weight: 500; flex: 1; min-width: 100px; }
+  .history-outcome { font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; white-space: nowrap; }
+  .history-outcome.boss    { color: #8ac85a; }
+  .history-outcome.enraged { color: #e07070; }
+  .history-char { color: var(--text-muted); font-style: italic; font-size: 13px; white-space: nowrap; }
+  .history-date { color: var(--text-muted); font-size: 12px; white-space: nowrap; margin-left: auto; }
+  .boss-empty { color: var(--text-muted); font-style: italic; text-align: center; padding: 28px 0; font-size: 15px; }
+
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.78); z-index: 100; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(2px); }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 32px 28px; max-width: 420px; width: 100%; box-shadow: 0 8px 60px rgba(0,0,0,0.8); position: relative; }
+  .modal::before { content: ''; position: absolute; inset: 4px; border: 1px solid var(--border); border-radius: 2px; pointer-events: none; opacity: 0.5; }
+  .modal h3 { font-family: 'Cinzel', serif; font-size: 18px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold-bright); margin-bottom: 24px; font-weight: 700; }
+  .modal-close { position: absolute; top: 12px; right: 14px; background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 18px; padding: 4px 8px; line-height: 1; transition: color 0.15s; z-index: 1; }
+  .modal-close:hover { color: var(--text); }
+  .modal .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 18px; }
+  .modal .field label { font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 0.25em; color: var(--gold); text-transform: uppercase; font-weight: 600; }
+  .modal .field input, .modal .field select {
+    background: var(--bg-input); border: 1px solid var(--border); color: var(--text);
+    font-family: 'Crimson Pro', serif; font-size: 16px; padding: 10px 14px;
+    border-radius: 3px; box-shadow: var(--shadow-inset); outline: none; width: 100%;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .modal .field input:focus, .modal .field select:focus { border-color: var(--gold-dim); box-shadow: var(--shadow-inset), 0 0 0 2px rgba(201,168,118,0.15); }
+  .modal-error { color: #e07070; font-size: 13px; font-style: italic; min-height: 18px; margin-bottom: 8px; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 6px; }
+  .modal-actions button { flex: 1; }
+
+  @media (max-width: 600px) {
+    .outcome-row { flex-direction: column; }
+    .boss-banner { flex-direction: column; align-items: flex-start; }
+    .boss-stats-table { font-size: 12px; }
+    .boss-stats-table td, .boss-stats-table th { padding: 7px 8px; }
+  }
 </style>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 <div class="container">
@@ -289,6 +410,7 @@
     <button data-page="home" class="active">Home</button>
     <button data-page="rune">Rune Table</button>
     <button data-page="mana">Mana Costs</button>
+    <button data-page="boss">Boss Counter</button>
   </nav>
 
   <!-- HOME -->
@@ -313,6 +435,12 @@
         <h3>Mana Cost Calculator</h3>
         <p>Calculate the gold cost per cast and per target for any spell, based on your vocation and mana regen method.</p>
         <span class="open">Open Calculator →</span>
+      </div>
+      <div class="calc-card" data-goto="boss">
+        <div class="icon">⚔</div>
+        <h3>Boss Attempt Counter</h3>
+        <p>Track how many times you encounter each boss versus an enraged creature. Measure your luck over time, per character and per account.</p>
+        <span class="open">Open Tracker →</span>
       </div>
     </div>
   </section>
@@ -539,14 +667,145 @@
     </div>
   </section>
 
+  <!-- BOSS ATTEMPT COUNTER -->
+  <section class="page" id="page-boss">
+    <div class="page-header">
+      <h2>Boss Attempt Counter</h2>
+      <p>Track boss encounters and measure your luck over time.</p>
+    </div>
+
+    <!-- Guest banner -->
+    <div id="bossGuestBanner" class="boss-banner">
+      <div class="banner-icon">⚔</div>
+      <div class="banner-text">
+        <strong>Guest Mode — Progress saved on this device only</strong>
+        <p>Create a free account to sync your data across devices and track stats per character.</p>
+      </div>
+      <div class="banner-actions">
+        <button class="action-btn" id="bossSignInBtn">Sign In</button>
+        <button class="action-btn primary" id="bossCreateAccountBtn">Create Account</button>
+      </div>
+    </div>
+
+    <!-- Logged-in panel -->
+    <div id="bossAccountPanel" class="account-panel" style="display:none">
+      <div class="acct-name" id="bossAcctName"></div>
+      <div class="acct-actions">
+        <button class="action-btn" id="bossAddCharBtn">+ Add Character</button>
+        <button class="action-btn danger" id="bossSignOutBtn">Sign Out</button>
+      </div>
+    </div>
+
+    <!-- Log Attempt -->
+    <div class="card">
+      <div class="card-title">Log Attempt</div>
+      <div class="inputs">
+        <div class="input-group full" id="bossCharGroup" style="display:none">
+          <label class="legend">Character</label>
+          <select id="bossCharSelect"></select>
+        </div>
+        <div class="input-group full">
+          <label class="legend">Tier</label>
+          <div class="btn-row" id="bossTierRow">
+            <button data-tier="Bronze">Bronze</button>
+            <button data-tier="Silver">Silver</button>
+            <button data-tier="Gold">Gold</button>
+            <button data-tier="Mythril">Mythril</button>
+          </div>
+        </div>
+        <div class="input-group full">
+          <label class="legend">Boss</label>
+          <select id="bossBossSelect"></select>
+        </div>
+        <div class="input-group full">
+          <label class="legend">Outcome</label>
+          <div class="outcome-row">
+            <button class="outcome-btn" id="outcomeBoss" data-outcome="boss">⚔ Boss Fight</button>
+            <button class="outcome-btn" id="outcomeEnraged" data-outcome="enraged">☠ Enraged Creature</button>
+          </div>
+        </div>
+      </div>
+      <button class="log-btn" id="bossLogBtn" disabled>Select a boss &amp; outcome to log</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="card" id="bossStatsCard">
+      <div class="boss-stats-header">
+        <h3>Statistics</h3>
+        <div class="char-filter" id="bossCharFilter"></div>
+      </div>
+      <div id="bossStatsContent"><div class="boss-empty">No attempts logged yet.</div></div>
+    </div>
+
+    <!-- History -->
+    <div class="card">
+      <div class="boss-stats-header">
+        <h3>Recent Attempts</h3>
+        <button class="action-btn danger" id="bossClearBtn" style="display:none">Clear All</button>
+      </div>
+      <div id="bossHistoryContent"><div class="boss-empty">No attempts logged yet.</div></div>
+    </div>
+  </section>
+
   <footer>Crafted with care for the people of Elderan ✦ Made by Langak</footer>
+</div>
+
+<!-- Account modal (create / sign in) -->
+<div class="modal-overlay" id="bossAccountModal">
+  <div class="modal">
+    <button class="modal-close" id="bossAccountModalClose">✕</button>
+    <h3 id="bossAccountModalTitle">Create Account</h3>
+    <div class="field">
+      <label>Account Name</label>
+      <input type="text" id="bossModalName" placeholder="e.g. langak" maxlength="30" autocomplete="off">
+    </div>
+    <div class="field">
+      <label>4-Digit PIN</label>
+      <input type="password" id="bossModalPin" placeholder="••••" maxlength="4" inputmode="numeric" autocomplete="off">
+    </div>
+    <div class="modal-error" id="bossAccountModalError"></div>
+    <div class="modal-actions">
+      <button class="action-btn" id="bossAccountModalCancel">Cancel</button>
+      <button class="action-btn primary" id="bossAccountModalSubmit">Create Account</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add character modal -->
+<div class="modal-overlay" id="bossCharModal">
+  <div class="modal">
+    <button class="modal-close" id="bossCharModalClose">✕</button>
+    <h3>Add Character</h3>
+    <div class="field">
+      <label>Character Name</label>
+      <input type="text" id="charModalName" placeholder="e.g. Langak" maxlength="30" autocomplete="off">
+    </div>
+    <div class="field">
+      <label>Vocation</label>
+      <select id="charModalVocation">
+        <option>Knight</option>
+        <option>Paladin</option>
+        <option>Druid</option>
+        <option>Sorcerer</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Server</label>
+      <input type="text" id="charModalServer" placeholder="e.g. Elderan" maxlength="30" autocomplete="off">
+    </div>
+    <div class="modal-error" id="bossCharModalError"></div>
+    <div class="modal-actions">
+      <button class="action-btn" id="bossCharModalCancel">Cancel</button>
+      <button class="action-btn primary" id="bossCharModalSubmit">Add Character</button>
+    </div>
+  </div>
 </div>
 
 <script>
 // ============================================================
 // ROUTING
 // ============================================================
-const PAGES = ["home", "rune", "mana"];
+const PAGES = ["home", "rune", "mana", "boss"];
 
 function showPage(name) {
   if (!PAGES.includes(name)) name = "home";
@@ -1168,6 +1427,547 @@ function renderAll() {
 }
 renderAll();
 renderManaAll();
+
+// ============================================================
+// BOSS ATTEMPT COUNTER
+// ============================================================
+
+// ---- Firebase config — replace with your own values ----
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyCDx3eDr-mTJPY2pKbdLA5g1PY_7W9Rwek",
+  authDomain:        "elderan-tools.firebaseapp.com",
+  projectId:         "elderan-tools",
+  storageBucket:     "elderan-tools.firebasestorage.app",
+  messagingSenderId: "1052096975821",
+  appId:             "1:1052096975821:web:c6c1899b4e2d982a5f6a84"
+};
+
+let db = null;
+(function() {
+  if (FIREBASE_CONFIG.apiKey === "YOUR_API_KEY") return;
+  if (typeof firebase === "undefined") return;
+  try {
+    if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    db = firebase.firestore();
+  } catch(e) { console.warn("Firebase init failed:", e.message); }
+})();
+
+// ---- Boss data ----
+const BOSS_DATA = {
+  Bronze: [
+    { name: "Mooh",            creature: "Minotaurs"        },
+    { name: "Grushnag",        creature: "Weak Orcs"        },
+    { name: "General Pincher", creature: "Sand Scorpions"   },
+    { name: "Big Smasher",     creature: "Cyclops"          },
+    { name: "Fernfang",        creature: "Monks"            },
+    { name: "Horned Fox",      creature: "Strong Minotaurs" },
+    { name: "Dharalion",       creature: "Elf Arcanists"    }
+  ],
+  Silver: [
+    { name: "Necropharus", creature: "Necromancers" },
+    { name: "Miralax",     creature: "Dragons"      },
+    { name: "Old Widow",   creature: "Giant Spiders"},
+    { name: "Avatar",      creature: "Heroes"       },
+    { name: "Demodras",    creature: "Dragon Lords" },
+    { name: "Lernaean",    creature: "Hydras"       }
+  ],
+  Gold: [
+    { name: "Evil Eye",   creature: "Elder Beholders"    },
+    { name: "Stoneskin",  creature: "Behemoths"          },
+    { name: "Frostfang",  creature: "Ice Dragons"        },
+    { name: "Zhandramon", creature: "Warlocks"           },
+    { name: "Ghost King", creature: "Dark Riders"        },
+    { name: "Bloodsaw",   creature: "Wicker Blacksmiths" },
+    { name: "Tormentor",  creature: "Executioners"       },
+    { name: "Beelzebub",  creature: "Demons"             }
+  ],
+  Mythril: [
+    { name: "Dracolich",        creature: "Undead Dragons"  },
+    { name: "Fluffy",           creature: "Hellhounds"      },
+    { name: "Blazefang",        creature: "Inferno Cobra"   },
+    { name: "Azurefang",        creature: "Azure Cobra"     },
+    { name: "Scythelord",       creature: "Praying Mantis"  },
+    { name: "Juggernaut",       creature: "Colossus"        },
+    { name: "Skyfang",          creature: "Cloud Cobra"     },
+    { name: "The Jungle Horror",creature: "Chirak"          },
+    { name: "Lion King",        creature: "Sky Lion"        },
+    { name: "Opera Phantom",    creature: "Glacier Phantom" }
+  ]
+};
+
+const BOSS_STORAGE_KEY  = "elderan-boss-guest-v1";
+const BOSS_SESSION_KEY  = "elderan-boss-session-v1";
+
+// ---- Runtime state ----
+let bossAccount = null;  // { name, pin, characters:[], attempts:[] }
+let bossSession = null;  // { accountName, pin }
+
+const bossState = {
+  tier:          "Bronze",
+  bossName:      null,
+  outcome:       null,   // "boss" | "enraged"
+  charId:        null,
+  statsFilter:   "all"
+};
+
+// ---- Helpers ----
+function bossGenId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+function bossLoadGuest() {
+  try {
+    const raw = localStorage.getItem(BOSS_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : { characters: [], attempts: [] };
+  } catch(e) { return { characters: [], attempts: [] }; }
+}
+
+function bossSaveGuest() {
+  try { localStorage.setItem(BOSS_STORAGE_KEY, JSON.stringify({ characters: bossAccount.characters, attempts: bossAccount.attempts })); } catch(e) {}
+}
+
+function bossIsLoggedIn() { return !!bossSession; }
+
+// ---- Firestore helpers ----
+async function fbLoad(accountName) {
+  if (!db) return null;
+  try {
+    const doc = await db.collection("bossAccounts").doc(accountName).get();
+    return doc.exists ? doc.data() : null;
+  } catch(e) { console.error("Firestore read error:", e); return null; }
+}
+
+async function fbSave(accountName, data) {
+  if (!db) return false;
+  try { await db.collection("bossAccounts").doc(accountName).set(data); return true; }
+  catch(e) { console.error("Firestore write error:", e); return false; }
+}
+
+// ---- Persist ----
+async function bossPersist() {
+  if (bossIsLoggedIn() && db) {
+    await fbSave(bossSession.accountName, bossAccount);
+  } else {
+    bossSaveGuest();
+  }
+}
+
+// ---- Account operations ----
+async function bossCreateAccount(rawName, pin) {
+  const name = rawName.trim().toLowerCase().replace(/\s+/g, "_");
+  if (!name) throw new Error("Account name cannot be empty.");
+  if (!/^\d{4}$/.test(pin)) throw new Error("PIN must be exactly 4 digits.");
+  if (!db) throw new Error("Firebase is not configured. Follow the setup guide to enable cloud accounts.");
+  const existing = await fbLoad(name);
+  if (existing) throw new Error("That account name is already taken.");
+  const data = { name, pin, characters: [], attempts: [], createdAt: Date.now() };
+  const ok = await fbSave(name, data);
+  if (!ok) throw new Error("Failed to save. Check your Firebase configuration.");
+  bossAccount = data;
+  bossSession = { accountName: name, pin };
+  try { localStorage.setItem(BOSS_SESSION_KEY, JSON.stringify(bossSession)); } catch(e) {}
+}
+
+async function bossSignIn(rawName, pin) {
+  const name = rawName.trim().toLowerCase().replace(/\s+/g, "_");
+  if (!name) throw new Error("Enter your account name.");
+  if (!pin)  throw new Error("Enter your PIN.");
+  if (!db)   throw new Error("Firebase is not configured.");
+  const data = await fbLoad(name);
+  if (!data)       throw new Error("Account not found.");
+  if (data.pin !== pin) throw new Error("Incorrect PIN.");
+  bossAccount = data;
+  bossSession = { accountName: name, pin };
+  try { localStorage.setItem(BOSS_SESSION_KEY, JSON.stringify(bossSession)); } catch(e) {}
+}
+
+function bossSignOut() {
+  bossAccount = null;
+  bossSession = null;
+  bossState.charId = null;
+  bossState.statsFilter = "all";
+  try { localStorage.removeItem(BOSS_SESSION_KEY); } catch(e) {}
+  const guest = bossLoadGuest();
+  bossAccount = { name: null, pin: null, characters: guest.characters, attempts: guest.attempts };
+  renderBossAll();
+}
+
+async function bossAddCharacter(name, vocation, server) {
+  const char = { id: bossGenId(), name: name.trim(), vocation, server: server.trim() };
+  bossAccount.characters.push(char);
+  await bossPersist();
+  return char;
+}
+
+function bossLog() {
+  if (!bossState.bossName || !bossState.outcome) return;
+  const tierList = BOSS_DATA[bossState.tier] || [];
+  const entry = tierList.find(b => b.name === bossState.bossName);
+  const attempt = {
+    id: bossGenId(),
+    charId: bossState.charId || null,
+    boss: bossState.bossName,
+    tier: bossState.tier,
+    creature: entry ? entry.creature : "",
+    outcome: bossState.outcome,
+    ts: Date.now()
+  };
+  bossAccount.attempts.unshift(attempt);
+}
+
+// ---- Render ----
+function renderBossAll() {
+  const loggedIn = bossIsLoggedIn();
+  document.getElementById("bossGuestBanner").style.display  = loggedIn ? "none" : "";
+  document.getElementById("bossAccountPanel").style.display = loggedIn ? "" : "none";
+
+  if (loggedIn) {
+    document.getElementById("bossAcctName").textContent = bossAccount.name;
+    document.getElementById("bossCharGroup").style.display = "";
+    renderBossCharSelect();
+  } else {
+    document.getElementById("bossCharGroup").style.display = "none";
+  }
+
+  renderBossTierRow();
+  renderBossBossSelect();
+  renderBossOutcomeBtns();
+  renderBossLogBtn();
+  renderBossStats();
+  renderBossHistory();
+}
+
+function renderBossTierRow() {
+  document.querySelectorAll("#bossTierRow button").forEach(b => {
+    b.classList.toggle("active", b.dataset.tier === bossState.tier);
+  });
+}
+
+function renderBossBossSelect() {
+  const sel = document.getElementById("bossBossSelect");
+  sel.innerHTML = "";
+  const list = BOSS_DATA[bossState.tier] || [];
+  list.forEach(b => {
+    const opt = document.createElement("option");
+    opt.value = b.name;
+    opt.textContent = `${b.name}  —  ${b.creature}`;
+    sel.appendChild(opt);
+  });
+  if (!list.find(b => b.name === bossState.bossName)) {
+    bossState.bossName = list[0]?.name || null;
+  }
+  sel.value = bossState.bossName;
+}
+
+function renderBossCharSelect() {
+  const sel = document.getElementById("bossCharSelect");
+  sel.innerHTML = "";
+  const chars = bossAccount?.characters || [];
+  if (chars.length === 0) {
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.textContent = "No characters yet — click \"+ Add Character\"";
+    sel.appendChild(opt);
+    bossState.charId = null;
+  } else {
+    chars.forEach(c => {
+      const opt = document.createElement("option");
+      opt.value = c.id;
+      opt.textContent = `${c.name}  (${c.vocation} · ${c.server})`;
+      sel.appendChild(opt);
+    });
+    if (!bossState.charId || !chars.find(c => c.id === bossState.charId)) {
+      bossState.charId = chars[0].id;
+    }
+    sel.value = bossState.charId;
+  }
+}
+
+function renderBossOutcomeBtns() {
+  document.getElementById("outcomeBoss").className    = "outcome-btn" + (bossState.outcome === "boss"    ? " selected-boss"    : "");
+  document.getElementById("outcomeEnraged").className = "outcome-btn" + (bossState.outcome === "enraged" ? " selected-enraged" : "");
+}
+
+function renderBossLogBtn() {
+  const btn = document.getElementById("bossLogBtn");
+  const ready = !!(bossState.bossName && bossState.outcome);
+  btn.disabled = !ready;
+  if (ready) {
+    const outcomeLabel = bossState.outcome === "boss" ? "Boss Fight" : "Enraged Creature";
+    btn.textContent = `Log — ${bossState.bossName} — ${outcomeLabel}`;
+    btn.classList.remove("logged");
+  } else {
+    btn.textContent = "Select a boss & outcome to log";
+  }
+}
+
+function renderBossStats() {
+  const attempts = bossAccount?.attempts || [];
+  const chars    = bossAccount?.characters || [];
+  const loggedIn = bossIsLoggedIn();
+
+  // Build character filter tabs
+  const filterEl = document.getElementById("bossCharFilter");
+  filterEl.innerHTML = "";
+  if (loggedIn && chars.length > 0) {
+    const mkBtn = (label, value) => {
+      const b = document.createElement("button");
+      b.textContent = label;
+      b.classList.toggle("active", bossState.statsFilter === value);
+      b.addEventListener("click", () => { bossState.statsFilter = value; renderBossStats(); });
+      filterEl.appendChild(b);
+    };
+    mkBtn("All Characters", "all");
+    chars.forEach(c => mkBtn(c.name, c.id));
+  }
+
+  // Filter
+  const filtered = bossState.statsFilter === "all"
+    ? attempts
+    : attempts.filter(a => a.charId === bossState.statsFilter);
+
+  const content = document.getElementById("bossStatsContent");
+  if (filtered.length === 0) {
+    content.innerHTML = '<div class="boss-empty">No attempts logged yet.</div>';
+    return;
+  }
+
+  // Aggregate per boss
+  const map = {};
+  filtered.forEach(a => {
+    if (!map[a.boss]) map[a.boss] = { tier: a.tier, creature: a.creature || "", total: 0, boss: 0, enraged: 0 };
+    map[a.boss].total++;
+    if (a.outcome === "boss") map[a.boss].boss++; else map[a.boss].enraged++;
+  });
+
+  const TIERS = ["Bronze","Silver","Gold","Mythril"];
+  let html = `<table class="boss-stats-table">
+    <thead><tr><th>Boss</th><th>Creature</th><th>Attempts</th><th>Boss</th><th>Enraged</th><th>Rate</th></tr></thead>
+    <tbody>`;
+
+  TIERS.forEach(tier => {
+    const rows = Object.entries(map).filter(([, v]) => v.tier === tier);
+    if (!rows.length) return;
+    html += `<tr class="tier-group-header"><td colspan="6"><span class="tier-badge tier-${tier}">${tier}</span></td></tr>`;
+    rows.forEach(([bossName, s]) => {
+      const rate = s.total > 0 ? (s.boss / s.total * 100) : 0;
+      const rateClass = s.total === 0 ? "rate-zero" : rate >= 50 ? "rate-high" : rate >= 20 ? "rate-mid" : "rate-low";
+      html += `<tr>
+        <td style="color:var(--text);font-weight:500">${bossName}</td>
+        <td style="color:var(--text-muted);font-style:italic;font-size:13px">${s.creature}</td>
+        <td>${s.total}</td>
+        <td style="color:#8ac85a">${s.boss}</td>
+        <td style="color:#e07070">${s.enraged}</td>
+        <td class="${rateClass}">${s.total > 0 ? rate.toFixed(0) + "%" : "—"}</td>
+      </tr>`;
+    });
+  });
+
+  html += "</tbody></table>";
+  content.innerHTML = html;
+}
+
+function renderBossHistory() {
+  const attempts = bossAccount?.attempts || [];
+  const chars    = bossAccount?.characters || [];
+  const content  = document.getElementById("bossHistoryContent");
+  const clearBtn = document.getElementById("bossClearBtn");
+
+  if (attempts.length === 0) {
+    content.innerHTML = '<div class="boss-empty">No attempts logged yet.</div>';
+    clearBtn.style.display = "none";
+    return;
+  }
+
+  clearBtn.style.display = "";
+  const recent = attempts.slice(0, 30);
+  let html = '<ul class="history-list">';
+  recent.forEach(a => {
+    const char = chars.find(c => c.id === a.charId);
+    const d = new Date(a.ts);
+    const dateStr = d.toLocaleDateString(undefined, { month: "short", day: "numeric" })
+                  + " " + d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+    html += `<li class="history-item">
+      <span class="tier-badge tier-${a.tier}">${a.tier}</span>
+      <span class="history-boss">${a.boss}</span>
+      <span class="history-outcome ${a.outcome}">${a.outcome === "boss" ? "Boss Fight" : "Enraged"}</span>
+      ${char ? `<span class="history-char">${char.name}</span>` : ""}
+      <span class="history-date">${dateStr}</span>
+    </li>`;
+  });
+  html += "</ul>";
+  content.innerHTML = html;
+}
+
+// ---- Modal helpers ----
+let bossModalMode = "create";
+
+function openAccountModal(mode) {
+  bossModalMode = mode;
+  const isCreate = mode === "create";
+  document.getElementById("bossAccountModalTitle").textContent  = isCreate ? "Create Account" : "Sign In";
+  document.getElementById("bossAccountModalSubmit").textContent = isCreate ? "Create Account" : "Sign In";
+  document.getElementById("bossModalName").value = "";
+  document.getElementById("bossModalPin").value  = "";
+  document.getElementById("bossAccountModalError").textContent = "";
+  document.getElementById("bossAccountModal").classList.add("open");
+  document.getElementById("bossModalName").focus();
+}
+
+function closeAccountModal() { document.getElementById("bossAccountModal").classList.remove("open"); }
+
+function openCharModal() {
+  document.getElementById("charModalName").value   = "";
+  document.getElementById("charModalServer").value = "";
+  document.getElementById("charModalVocation").value = "Knight";
+  document.getElementById("bossCharModalError").textContent = "";
+  document.getElementById("bossCharModal").classList.add("open");
+  document.getElementById("charModalName").focus();
+}
+
+function closeCharModal() { document.getElementById("bossCharModal").classList.remove("open"); }
+
+// ---- Event wiring ----
+document.getElementById("bossCreateAccountBtn").addEventListener("click", () => openAccountModal("create"));
+document.getElementById("bossSignInBtn").addEventListener("click",        () => openAccountModal("signin"));
+document.getElementById("bossSignOutBtn").addEventListener("click", () => { if (confirm("Sign out of your account?")) bossSignOut(); });
+document.getElementById("bossAddCharBtn").addEventListener("click", openCharModal);
+
+document.getElementById("bossAccountModalClose").addEventListener("click",  closeAccountModal);
+document.getElementById("bossAccountModalCancel").addEventListener("click", closeAccountModal);
+document.getElementById("bossAccountModal").addEventListener("click", e => { if (e.target === e.currentTarget) closeAccountModal(); });
+
+document.getElementById("bossCharModalClose").addEventListener("click",  closeCharModal);
+document.getElementById("bossCharModalCancel").addEventListener("click", closeCharModal);
+document.getElementById("bossCharModal").addEventListener("click", e => { if (e.target === e.currentTarget) closeCharModal(); });
+
+document.getElementById("bossModalPin").addEventListener("input", e => {
+  e.target.value = e.target.value.replace(/\D/g, "").slice(0, 4);
+});
+
+document.getElementById("bossAccountModalSubmit").addEventListener("click", async () => {
+  const name  = document.getElementById("bossModalName").value;
+  const pin   = document.getElementById("bossModalPin").value;
+  const errEl = document.getElementById("bossAccountModalError");
+  const btn   = document.getElementById("bossAccountModalSubmit");
+  errEl.textContent = "";
+  btn.disabled = true;
+  btn.textContent = "Please wait…";
+  try {
+    if (bossModalMode === "create") await bossCreateAccount(name, pin);
+    else await bossSignIn(name, pin);
+    closeAccountModal();
+    renderBossAll();
+  } catch(e) {
+    errEl.textContent = e.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = bossModalMode === "create" ? "Create Account" : "Sign In";
+  }
+});
+
+document.getElementById("bossCharModalSubmit").addEventListener("click", async () => {
+  const name    = document.getElementById("charModalName").value;
+  const voc     = document.getElementById("charModalVocation").value;
+  const server  = document.getElementById("charModalServer").value;
+  const errEl   = document.getElementById("bossCharModalError");
+  if (!name.trim()) { errEl.textContent = "Character name is required."; return; }
+  errEl.textContent = "";
+  const btn = document.getElementById("bossCharModalSubmit");
+  btn.disabled = true;
+  btn.textContent = "Saving…";
+  await bossAddCharacter(name, voc, server);
+  closeCharModal();
+  renderBossAll();
+  btn.disabled = false;
+  btn.textContent = "Add Character";
+});
+
+document.querySelectorAll("#bossTierRow button").forEach(b => {
+  b.addEventListener("click", () => {
+    bossState.tier = b.dataset.tier;
+    bossState.bossName = BOSS_DATA[bossState.tier][0]?.name || null;
+    renderBossTierRow();
+    renderBossBossSelect();
+    renderBossLogBtn();
+  });
+});
+
+document.getElementById("bossBossSelect").addEventListener("change", e => {
+  bossState.bossName = e.target.value;
+  renderBossLogBtn();
+});
+
+document.getElementById("bossCharSelect").addEventListener("change", e => {
+  bossState.charId = e.target.value || null;
+});
+
+document.getElementById("outcomeBoss").addEventListener("click", () => {
+  bossState.outcome = "boss";
+  renderBossOutcomeBtns();
+  renderBossLogBtn();
+});
+
+document.getElementById("outcomeEnraged").addEventListener("click", () => {
+  bossState.outcome = "enraged";
+  renderBossOutcomeBtns();
+  renderBossLogBtn();
+});
+
+document.getElementById("bossLogBtn").addEventListener("click", async () => {
+  if (!bossState.bossName || !bossState.outcome) return;
+  const btn = document.getElementById("bossLogBtn");
+  btn.disabled = true;
+  bossLog();
+  await bossPersist();
+  bossState.outcome = null;
+  renderBossStats();
+  renderBossHistory();
+  // Brief confirmation flash
+  btn.classList.add("logged");
+  btn.textContent = "✓ Logged!";
+  setTimeout(() => { renderBossOutcomeBtns(); renderBossLogBtn(); }, 1200);
+});
+
+document.getElementById("bossClearBtn").addEventListener("click", async () => {
+  if (!confirm("Delete all logged attempts? This cannot be undone.")) return;
+  bossAccount.attempts = [];
+  await bossPersist();
+  renderBossStats();
+  renderBossHistory();
+});
+
+// ---- Init ----
+async function initBossTracker() {
+  // Restore session from localStorage
+  try {
+    const raw = localStorage.getItem(BOSS_SESSION_KEY);
+    if (raw) {
+      bossSession = JSON.parse(raw);
+      if (db) {
+        const data = await fbLoad(bossSession.accountName);
+        if (data && data.pin === bossSession.pin) {
+          bossAccount = data;
+        } else {
+          bossSession = null;
+          localStorage.removeItem(BOSS_SESSION_KEY);
+        }
+      } else {
+        bossSession = null;
+      }
+    }
+  } catch(e) { bossSession = null; }
+
+  if (!bossAccount) {
+    const guest = bossLoadGuest();
+    bossAccount = { name: null, pin: null, characters: guest.characters, attempts: guest.attempts };
+  }
+
+  bossState.bossName = BOSS_DATA[bossState.tier][0]?.name || null;
+  renderBossAll();
+}
+
+initBossTracker();
 </script>
 </body>
 </html>
