@@ -387,11 +387,48 @@
   .modal-actions { display: flex; gap: 10px; margin-top: 6px; }
   .modal-actions button { flex: 1; }
 
+  /* Boss grid */
+  .boss-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+  }
+  .boss-card {
+    background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 3px;
+    cursor: pointer; transition: all 0.18s; padding: 8px 6px 10px;
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    text-align: center; box-shadow: var(--shadow-inset);
+  }
+  .boss-card:hover { border-color: var(--border-bright); }
+  .boss-card.selected {
+    background: linear-gradient(180deg, #3a2a18, #241a0f);
+    border-color: var(--gold-dim);
+    box-shadow: var(--shadow-inset), 0 0 16px rgba(201,168,118,0.18);
+  }
+  .boss-card-img {
+    width: 100%; aspect-ratio: 1; object-fit: cover;
+    border-radius: 2px; background: var(--bg-input); display: block;
+  }
+  .boss-card-placeholder {
+    width: 100%; aspect-ratio: 1; background: var(--bg-input); border-radius: 2px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; color: var(--gold-dim);
+  }
+  .boss-card-name {
+    font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.05em;
+    color: var(--text-muted); text-transform: uppercase; font-weight: 500; line-height: 1.3;
+  }
+  .boss-card.selected .boss-card-name { color: var(--gold-bright); }
+
   @media (max-width: 600px) {
     .outcome-row { flex-direction: column; }
     .boss-banner { flex-direction: column; align-items: flex-start; }
     .boss-stats-table { font-size: 12px; }
     .boss-stats-table td, .boss-stats-table th { padding: 7px 8px; }
+    .boss-grid { grid-template-columns: repeat(4, 1fr); }
+  }
+  @media (max-width: 380px) {
+    .boss-grid { grid-template-columns: repeat(3, 1fr); }
   }
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -705,17 +742,8 @@
           <select id="bossCharSelect"></select>
         </div>
         <div class="input-group full">
-          <label class="legend">Tier</label>
-          <div class="btn-row" id="bossTierRow">
-            <button data-tier="Bronze">Bronze</button>
-            <button data-tier="Silver">Silver</button>
-            <button data-tier="Gold">Gold</button>
-            <button data-tier="Mythril">Mythril</button>
-          </div>
-        </div>
-        <div class="input-group full">
           <label class="legend">Boss</label>
-          <select id="bossBossSelect"></select>
+          <div class="boss-grid" id="bossGrid"></div>
         </div>
         <div class="input-group full">
           <label class="legend">Outcome</label>
@@ -1629,34 +1657,59 @@ function renderBossAll() {
     document.getElementById("bossCharGroup").style.display = "none";
   }
 
-  renderBossTierRow();
-  renderBossBossSelect();
+  renderBossGrid();
   renderBossOutcomeBtns();
   renderBossLogBtn();
   renderBossStats();
   renderBossHistory();
 }
 
-function renderBossTierRow() {
-  document.querySelectorAll("#bossTierRow button").forEach(b => {
-    b.classList.toggle("active", b.dataset.tier === bossState.tier);
-  });
+function bossImgFile(name) {
+  return "bosses/" + name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + ".gif";
 }
 
-function renderBossBossSelect() {
-  const sel = document.getElementById("bossBossSelect");
-  sel.innerHTML = "";
-  const list = BOSS_DATA[bossState.tier] || [];
-  list.forEach(b => {
-    const opt = document.createElement("option");
-    opt.value = b.name;
-    opt.textContent = `${b.name}  —  ${b.creature}`;
-    sel.appendChild(opt);
+function renderBossGrid() {
+  const grid = document.getElementById("bossGrid");
+  grid.innerHTML = "";
+  const TIERS = ["Bronze", "Silver", "Gold", "Mythril"];
+  TIERS.forEach(tier => {
+    BOSS_DATA[tier].forEach(boss => {
+      const btn = document.createElement("button");
+      btn.className = "boss-card" + (bossState.bossName === boss.name ? " selected" : "");
+
+      const img = document.createElement("img");
+      img.src = bossImgFile(boss.name);
+      img.className = "boss-card-img";
+      img.alt = boss.name;
+      img.onerror = function() {
+        const ph = document.createElement("div");
+        ph.className = "boss-card-placeholder";
+        ph.textContent = "⚔";
+        this.replaceWith(ph);
+      };
+
+      const badge = document.createElement("span");
+      badge.className = `tier-badge tier-${tier}`;
+      badge.textContent = tier;
+
+      const nameEl = document.createElement("span");
+      nameEl.className = "boss-card-name";
+      nameEl.textContent = boss.name;
+
+      btn.appendChild(img);
+      btn.appendChild(badge);
+      btn.appendChild(nameEl);
+
+      btn.addEventListener("click", () => {
+        bossState.bossName = boss.name;
+        bossState.tier = tier;
+        renderBossGrid();
+        renderBossLogBtn();
+      });
+
+      grid.appendChild(btn);
+    });
   });
-  if (!list.find(b => b.name === bossState.bossName)) {
-    bossState.bossName = list[0]?.name || null;
-  }
-  sel.value = bossState.bossName;
 }
 
 function renderBossCharSelect() {
@@ -1883,21 +1936,6 @@ document.getElementById("bossCharModalSubmit").addEventListener("click", async (
   btn.textContent = "Add Character";
 });
 
-document.querySelectorAll("#bossTierRow button").forEach(b => {
-  b.addEventListener("click", () => {
-    bossState.tier = b.dataset.tier;
-    bossState.bossName = BOSS_DATA[bossState.tier][0]?.name || null;
-    renderBossTierRow();
-    renderBossBossSelect();
-    renderBossLogBtn();
-  });
-});
-
-document.getElementById("bossBossSelect").addEventListener("change", e => {
-  bossState.bossName = e.target.value;
-  renderBossLogBtn();
-});
-
 document.getElementById("bossCharSelect").addEventListener("change", e => {
   bossState.charId = e.target.value || null;
 });
@@ -1963,7 +2001,8 @@ async function initBossTracker() {
     bossAccount = { name: null, pin: null, characters: guest.characters, attempts: guest.attempts };
   }
 
-  bossState.bossName = BOSS_DATA[bossState.tier][0]?.name || null;
+  bossState.tier = "Bronze";
+  bossState.bossName = null;
   renderBossAll();
 }
 
