@@ -221,13 +221,13 @@ costPerTarget = ceil(costPerCast / targets)   // targets=1 for single-target
 | Gold | Doctor Bloodsaw | Wicker Blacksmiths |
 | Gold | Tormentor | Executioners |
 | Gold | Beelzebub | Demons |
+| Gold | Blazefang | Inferno Cobra |
+| Gold | Azurefang | Azure Cobra |
+| Gold | Scythelord | Praying Mantis |
+| Gold | Skyfang | Cloud Cobra |
 | Mythril | Dracolich | Undead Dragons |
 | Mythril | Fluffy | Hellhounds |
-| Mythril | Blazefang | Inferno Cobra |
-| Mythril | Azurefang | Azure Cobra |
-| Mythril | Scythelord | Praying Mantis |
 | Mythril | Juggernaut | Colossus |
-| Mythril | Skyfang | Cloud Cobra |
 | Mythril | The Jungle Horror | Chirak |
 | Mythril | Lion King | Sky Lion |
 | Mythril | Opera Phantom | Glacier Phantom |

@@ -350,7 +350,10 @@
   .boss-stats-table td:not(:first-child):not(:nth-child(2)) { text-align: right; font-variant-numeric: tabular-nums; color: var(--text-muted); }
   .boss-stats-table tr:last-child td { border-bottom: none; }
   .boss-stats-table tr:hover td { background: rgba(201,168,118,0.025); }
+  .boss-stats-filters { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
   .boss-stats-table .tier-group-header td { background: var(--bg-elevated); font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); font-weight: 600; padding: 7px 12px; border-bottom: 1px solid var(--border); }
+  .stats-total-row td { border-top: 2px solid var(--border-bright); background: var(--bg-elevated); font-family: 'Cinzel', serif; font-size: 12px; font-weight: 600; color: var(--gold); padding: 10px 12px; border-bottom: none; }
+  .stats-total-row td:not(:first-child):not(:nth-child(2)) { text-align: right; font-variant-numeric: tabular-nums; }
   .rate-high { color: #8ac85a; font-weight: 600; }
   .rate-mid  { color: #e0c060; font-weight: 600; }
   .rate-low  { color: #e07070; font-weight: 600; }
@@ -760,7 +763,10 @@
     <div class="card" id="bossStatsCard">
       <div class="boss-stats-header">
         <h3>Statistics</h3>
-        <div class="char-filter" id="bossCharFilter"></div>
+        <div class="boss-stats-filters">
+          <div class="char-filter" id="bossTierFilter"></div>
+          <div class="char-filter" id="bossCharFilter"></div>
+        </div>
       </div>
       <div id="bossStatsContent"><div class="boss-empty">No attempts logged yet.</div></div>
     </div>
@@ -1500,23 +1506,23 @@ const BOSS_DATA = {
     { name: "Lernaean",    creature: "Hydras"       }
   ],
   Gold: [
-    { name: "Evil Eye",   creature: "Elder Beholders"    },
-    { name: "Stoneskin",  creature: "Behemoths"          },
-    { name: "Frostfang",  creature: "Ice Dragons"        },
-    { name: "Zhandramon", creature: "Warlocks"           },
-    { name: "Ghost King", creature: "Dark Riders"        },
+    { name: "Evil Eye",        creature: "Elder Beholders"    },
+    { name: "Stoneskin",       creature: "Behemoths"          },
+    { name: "Frostfang",       creature: "Ice Dragons"        },
+    { name: "Zhandramon",      creature: "Warlocks"           },
+    { name: "Ghost King",      creature: "Dark Riders"        },
     { name: "Doctor Bloodsaw", creature: "Wicker Blacksmiths" },
-    { name: "Tormentor",  creature: "Executioners"       },
-    { name: "Beelzebub",  creature: "Demons"             }
+    { name: "Tormentor",       creature: "Executioners"       },
+    { name: "Beelzebub",       creature: "Demons"             },
+    { name: "Blazefang",       creature: "Inferno Cobra"      },
+    { name: "Azurefang",       creature: "Azure Cobra"        },
+    { name: "Scythelord",      creature: "Praying Mantis"     },
+    { name: "Skyfang",         creature: "Cloud Cobra"        }
   ],
   Mythril: [
     { name: "Dracolich",        creature: "Undead Dragons"  },
     { name: "Fluffy",           creature: "Hellhounds"      },
-    { name: "Blazefang",        creature: "Inferno Cobra"   },
-    { name: "Azurefang",        creature: "Azure Cobra"     },
-    { name: "Scythelord",       creature: "Praying Mantis"  },
     { name: "Juggernaut",       creature: "Colossus"        },
-    { name: "Skyfang",          creature: "Cloud Cobra"     },
     { name: "The Jungle Horror",creature: "Chirak"          },
     { name: "Lion King",        creature: "Sky Lion"        },
     { name: "Opera Phantom",    creature: "Glacier Phantom" }
@@ -1531,11 +1537,12 @@ let bossAccount = null;  // { name, pin, characters:[], attempts:[] }
 let bossSession = null;  // { accountName, pin }
 
 const bossState = {
-  tier:          "Bronze",
-  bossName:      null,
-  outcome:       null,   // "boss" | "enraged"
-  charId:        null,
-  statsFilter:   "all"
+  tier:            "Bronze",
+  bossName:        null,
+  outcome:         null,   // "boss" | "enraged"
+  charId:          null,
+  statsFilter:     "all",  // character filter
+  statsTierFilter: "all"   // tier filter
 };
 
 // ---- Helpers ----
@@ -1614,6 +1621,7 @@ function bossSignOut() {
   bossSession = null;
   bossState.charId = null;
   bossState.statsFilter = "all";
+  bossState.statsTierFilter = "all";
   try { localStorage.removeItem(BOSS_SESSION_KEY); } catch(e) {}
   const guest = bossLoadGuest();
   bossAccount = { name: null, pin: null, characters: guest.characters, attempts: guest.attempts };
@@ -1758,26 +1766,43 @@ function renderBossStats() {
   const attempts = bossAccount?.attempts || [];
   const chars    = bossAccount?.characters || [];
   const loggedIn = bossIsLoggedIn();
+  const TIERS    = ["Bronze", "Silver", "Gold", "Mythril"];
 
-  // Build character filter tabs
-  const filterEl = document.getElementById("bossCharFilter");
-  filterEl.innerHTML = "";
+  // Tier filter buttons (always shown)
+  const tierFilterEl = document.getElementById("bossTierFilter");
+  tierFilterEl.innerHTML = "";
+  const mkTierBtn = (label, value) => {
+    const b = document.createElement("button");
+    b.textContent = label;
+    b.classList.toggle("active", bossState.statsTierFilter === value);
+    b.addEventListener("click", () => { bossState.statsTierFilter = value; renderBossStats(); });
+    tierFilterEl.appendChild(b);
+  };
+  mkTierBtn("All Tiers", "all");
+  TIERS.forEach(t => mkTierBtn(t, t));
+
+  // Character filter buttons (logged-in only)
+  const charFilterEl = document.getElementById("bossCharFilter");
+  charFilterEl.innerHTML = "";
   if (loggedIn && chars.length > 0) {
-    const mkBtn = (label, value) => {
+    const mkCharBtn = (label, value) => {
       const b = document.createElement("button");
       b.textContent = label;
       b.classList.toggle("active", bossState.statsFilter === value);
       b.addEventListener("click", () => { bossState.statsFilter = value; renderBossStats(); });
-      filterEl.appendChild(b);
+      charFilterEl.appendChild(b);
     };
-    mkBtn("All Characters", "all");
-    chars.forEach(c => mkBtn(c.name, c.id));
+    mkCharBtn("All Characters", "all");
+    chars.forEach(c => mkCharBtn(c.name, c.id));
   }
 
-  // Filter
-  const filtered = bossState.statsFilter === "all"
+  // Apply both filters
+  let filtered = bossState.statsFilter === "all"
     ? attempts
     : attempts.filter(a => a.charId === bossState.statsFilter);
+  if (bossState.statsTierFilter !== "all") {
+    filtered = filtered.filter(a => a.tier === bossState.statsTierFilter);
+  }
 
   const content = document.getElementById("bossStatsContent");
   if (filtered.length === 0) {
@@ -1793,12 +1818,12 @@ function renderBossStats() {
     if (a.outcome === "boss") map[a.boss].boss++; else map[a.boss].enraged++;
   });
 
-  const TIERS = ["Bronze","Silver","Gold","Mythril"];
   let html = `<table class="boss-stats-table">
     <thead><tr><th>Boss</th><th>Creature</th><th>Attempts</th><th>Boss</th><th>Enraged</th><th>Rate</th></tr></thead>
     <tbody>`;
 
-  TIERS.forEach(tier => {
+  const activeTiers = bossState.statsTierFilter === "all" ? TIERS : [bossState.statsTierFilter];
+  activeTiers.forEach(tier => {
     const rows = Object.entries(map).filter(([, v]) => v.tier === tier);
     if (!rows.length) return;
     html += `<tr class="tier-group-header"><td colspan="6"><span class="tier-badge tier-${tier}">${tier}</span></td></tr>`;
@@ -1815,6 +1840,20 @@ function renderBossStats() {
       </tr>`;
     });
   });
+
+  // Totals row
+  const totals = Object.values(map).reduce((acc, s) => {
+    acc.total += s.total; acc.boss += s.boss; acc.enraged += s.enraged; return acc;
+  }, { total: 0, boss: 0, enraged: 0 });
+  const totalRate = totals.total > 0 ? (totals.boss / totals.total * 100) : 0;
+  const totalRateClass = totals.total === 0 ? "rate-zero" : totalRate >= 50 ? "rate-high" : totalRate >= 20 ? "rate-mid" : "rate-low";
+  html += `<tr class="stats-total-row">
+    <td colspan="2">Total</td>
+    <td>${totals.total}</td>
+    <td style="color:#8ac85a">${totals.boss}</td>
+    <td style="color:#e07070">${totals.enraged}</td>
+    <td class="${totalRateClass}">${totals.total > 0 ? totalRate.toFixed(0) + "%" : "—"}</td>
+  </tr>`;
 
   html += "</tbody></table>";
   content.innerHTML = html;
@@ -1976,6 +2015,25 @@ document.getElementById("bossClearBtn").addEventListener("click", async () => {
 });
 
 // ---- Init ----
+const BOSS_TIER_MIGRATIONS = {
+  "Blazefang": "Gold",
+  "Azurefang": "Gold",
+  "Scythelord": "Gold",
+  "Skyfang":    "Gold"
+};
+
+function migrateAttemptTiers() {
+  let changed = false;
+  (bossAccount.attempts || []).forEach(a => {
+    const correctTier = BOSS_TIER_MIGRATIONS[a.boss];
+    if (correctTier && a.tier !== correctTier) {
+      a.tier = correctTier;
+      changed = true;
+    }
+  });
+  return changed;
+}
+
 async function initBossTracker() {
   // Restore session from localStorage
   try {
@@ -2000,6 +2058,8 @@ async function initBossTracker() {
     const guest = bossLoadGuest();
     bossAccount = { name: null, pin: null, characters: guest.characters, attempts: guest.attempts };
   }
+
+  if (migrateAttemptTiers()) await bossPersist();
 
   bossState.tier = "Bronze";
   bossState.bossName = null;
