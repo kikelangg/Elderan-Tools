@@ -333,6 +333,17 @@
   .log-btn:disabled { opacity: 0.35; cursor: default; }
   .log-btn.logged { border-color: #4a7a2a; color: #8ac85a; }
 
+  .log-bulk-btn {
+    width: 100%; margin-top: 8px; padding: 11px 16px;
+    background: transparent; border: 1px solid var(--burgundy);
+    color: var(--burgundy-bright); font-family: 'Cinzel', serif;
+    font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+    cursor: pointer; transition: all 0.18s; border-radius: 3px; font-weight: 500;
+  }
+  .log-bulk-btn:hover:not(:disabled) { background: rgba(114,41,41,0.14); border-color: var(--burgundy-bright); color: #e07070; }
+  .log-bulk-btn:disabled { opacity: 0.3; cursor: default; }
+  .log-bulk-btn.logged { border-color: #4a7a2a; color: #8ac85a; }
+
   .card-title { font-family: 'Cinzel', serif; font-size: 13px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); font-weight: 600; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
   .card + .card { margin-top: 24px; }
 
@@ -368,6 +379,8 @@
   .history-outcome.enraged { color: #e07070; }
   .history-char { color: var(--text-muted); font-style: italic; font-size: 13px; white-space: nowrap; }
   .history-date { color: var(--text-muted); font-size: 12px; white-space: nowrap; margin-left: auto; }
+  .history-delete { background: transparent; border: none; color: var(--border-bright); cursor: pointer; font-size: 13px; padding: 2px 4px; line-height: 1; transition: color 0.15s; flex-shrink: 0; }
+  .history-delete:hover { color: #e07070; }
   .boss-empty { color: var(--text-muted); font-style: italic; text-align: center; padding: 28px 0; font-size: 15px; }
 
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.78); z-index: 100; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(2px); }
@@ -785,6 +798,7 @@
         </div>
       </div>
       <button class="log-btn" id="bossLogBtn" disabled>Select a boss &amp; outcome to log</button>
+      <button class="log-bulk-btn" id="bossBulkEnragedBtn" disabled>+10 Enraged Creature</button>
     </div>
 
     <!-- Stats -->
@@ -1810,8 +1824,9 @@ function renderBossOutcomeBtns() {
 }
 
 function renderBossLogBtn() {
-  const btn = document.getElementById("bossLogBtn");
-  const ready = !!(bossState.bossName && bossState.outcome);
+  const btn      = document.getElementById("bossLogBtn");
+  const bulkBtn  = document.getElementById("bossBulkEnragedBtn");
+  const ready    = !!(bossState.bossName && bossState.outcome);
   btn.disabled = !ready;
   if (ready) {
     const outcomeLabel = bossState.outcome === "boss" ? "Boss Fight" : "Enraged Creature";
@@ -1819,6 +1834,9 @@ function renderBossLogBtn() {
     btn.classList.remove("logged");
   } else {
     btn.textContent = "Select a boss & outcome to log";
+  }
+  if (bulkBtn && !bulkBtn.classList.contains("logged")) {
+    bulkBtn.disabled = !bossState.bossName;
   }
 }
 
@@ -1945,10 +1963,20 @@ function renderBossHistory() {
       <span class="history-outcome ${a.outcome}">${a.outcome === "boss" ? "Boss Fight" : "Enraged"}</span>
       ${char ? `<span class="history-char">${char.name}</span>` : ""}
       <span class="history-date">${dateStr}</span>
+      <button class="history-delete" data-id="${a.id}" title="Delete attempt">✕</button>
     </li>`;
   });
   html += "</ul>";
   content.innerHTML = html;
+
+  content.querySelectorAll(".history-delete").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      bossAccount.attempts = bossAccount.attempts.filter(a => a.id !== btn.dataset.id);
+      await bossPersist();
+      renderBossStats();
+      renderBossHistory();
+    });
+  });
 }
 
 // ---- Public toggle ----
@@ -2212,6 +2240,36 @@ document.getElementById("bossLogBtn").addEventListener("click", async () => {
   btn.classList.add("logged");
   btn.textContent = "✓ Logged!";
   setTimeout(() => { renderBossOutcomeBtns(); renderBossLogBtn(); }, 1200);
+});
+
+document.getElementById("bossBulkEnragedBtn").addEventListener("click", async () => {
+  if (!bossState.bossName) return;
+  const btn     = document.getElementById("bossBulkEnragedBtn");
+  btn.disabled  = true;
+  const tierList = BOSS_DATA[bossState.tier] || [];
+  const entry    = tierList.find(b => b.name === bossState.bossName);
+  const now      = Date.now();
+  for (let i = 0; i < 10; i++) {
+    bossAccount.attempts.unshift({
+      id:       bossGenId(),
+      charId:   bossState.charId || null,
+      boss:     bossState.bossName,
+      tier:     bossState.tier,
+      creature: entry ? entry.creature : "",
+      outcome:  "enraged",
+      ts:       now - i
+    });
+  }
+  await bossPersist();
+  renderBossStats();
+  renderBossHistory();
+  btn.classList.add("logged");
+  btn.textContent = "✓ +10 Logged!";
+  setTimeout(() => {
+    btn.classList.remove("logged");
+    btn.textContent = "+10 Enraged Creature";
+    btn.disabled = !bossState.bossName;
+  }, 1200);
 });
 
 document.getElementById("bossClearBtn").addEventListener("click", async () => {
