@@ -567,6 +567,14 @@
               <span class="desc">5% cheaper spirit cost</span>
             </span>
           </label>
+          <label class="toggle" id="ringToggle">
+            <input type="checkbox" id="spellcasterRing">
+            <span class="box"></span>
+            <span class="info">
+              <span class="name">Spellcaster Ring</span>
+              <span class="desc" id="ringDesc">+spirit regen per minute (vocation-based)</span>
+            </span>
+          </label>
         </div>
       </div>
     </div>
@@ -915,8 +923,9 @@ const state = {
   vocation:      "Knight",
   promotion:     0,
   rune:          null,   // set after vocation-filter
-  magicCarpet:   false,
-  runeStone:     false,
+  magicCarpet:     false,
+  runeStone:       false,
+  spellcasterRing: false,
   startingSpirit: 0,
   duration:      8
 };
@@ -928,11 +937,14 @@ function runesForVocation(voc) {
   return Object.keys(data.runes).filter(name => data.runes[name].vocations.includes(voc));
 }
 
+const RING_REGEN = { Knight: 4/60, Paladin: 8/60, Druid: 12/60, Sorcerer: 12/60 };
+
 function currentRegen() {
   const v = data.vocations[state.vocation];
   if (!v) return 0;
   let r = state.promotion === 0 ? v.base : state.promotion === 1 ? v.promo1 : v.promo2;
-  if (state.magicCarpet) r += 1;
+  if (state.magicCarpet)     r += 1;
+  if (state.spellcasterRing) r += (RING_REGEN[state.vocation] || 0);
   return r;
 }
 
@@ -1049,9 +1061,13 @@ function renderDurationRow() {
   });
 }
 
+const RING_REGEN_LABEL = { Knight: "4", Paladin: "8", Druid: "12", Sorcerer: "12" };
+
 function renderToggles() {
   document.getElementById("carpetToggle").classList.toggle("checked", state.magicCarpet);
   document.getElementById("stoneToggle").classList.toggle("checked", state.runeStone);
+  document.getElementById("ringToggle").classList.toggle("checked", state.spellcasterRing);
+  document.getElementById("ringDesc").textContent = `+${RING_REGEN_LABEL[state.vocation] || "?"} spirit per minute`;
 }
 
 // ============================================================
@@ -1146,6 +1162,9 @@ document.getElementById("carpetToggle").addEventListener("click", e => {
 });
 document.getElementById("stoneToggle").addEventListener("click", e => {
   e.preventDefault(); state.runeStone = !state.runeStone; renderToggles(); calculate();
+});
+document.getElementById("ringToggle").addEventListener("click", e => {
+  e.preventDefault(); state.spellcasterRing = !state.spellcasterRing; renderToggles(); calculate();
 });
 document.getElementById("setupToggle").addEventListener("click", () => {
   const btn = document.getElementById("setupToggle");
