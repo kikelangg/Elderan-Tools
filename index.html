@@ -423,6 +423,25 @@
   }
   .boss-card.selected .boss-card-name { color: var(--gold-bright); }
 
+  .action-btn.public-active { border-color: #4a7a2a; color: #8ac85a; }
+  .action-btn.public-active:hover { background: rgba(74,122,42,0.14); border-color: #6aaa3a; }
+
+  .leaderboard-search {
+    width: 100%; background: var(--bg-input); border: 1px solid var(--border);
+    color: var(--text); font-family: 'Crimson Pro', serif; font-size: 16px;
+    padding: 10px 14px; border-radius: 3px; box-shadow: var(--shadow-inset);
+    outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+    margin-bottom: 18px;
+  }
+  .leaderboard-search:focus { border-color: var(--gold-dim); box-shadow: var(--shadow-inset), 0 0 0 2px rgba(201,168,118,0.15); }
+  .leaderboard-search::placeholder { color: var(--text-muted); }
+
+  .leaderboard-row { cursor: pointer; }
+  .leaderboard-row:hover td { background: rgba(201,168,118,0.05) !important; }
+
+  .modal-wide { max-width: 680px !important; }
+  .modal-wide .modal-scroll { max-height: 60vh; overflow-y: auto; margin-top: 4px; }
+
   @media (max-width: 600px) {
     .outcome-row { flex-direction: column; }
     .boss-banner { flex-direction: column; align-items: flex-start; }
@@ -739,6 +758,7 @@
     <div id="bossAccountPanel" class="account-panel" style="display:none">
       <div class="acct-name" id="bossAcctName"></div>
       <div class="acct-actions">
+        <button class="action-btn" id="bossTogglePublicBtn">Private Profile</button>
         <button class="action-btn" id="bossAddCharBtn">+ Add Character</button>
         <button class="action-btn danger" id="bossSignOutBtn">Sign Out</button>
       </div>
@@ -786,6 +806,16 @@
         <button class="action-btn danger" id="bossClearBtn" style="display:none">Clear All</button>
       </div>
       <div id="bossHistoryContent"><div class="boss-empty">No attempts logged yet.</div></div>
+    </div>
+
+    <!-- Community Leaderboard -->
+    <div class="card" id="bossLeaderboardCard">
+      <div class="boss-stats-header">
+        <h3>Community</h3>
+        <button class="action-btn" id="bossLeaderboardRefreshBtn">↻ Refresh</button>
+      </div>
+      <input type="text" id="bossLeaderboardSearch" class="leaderboard-search" placeholder="Search by account name…">
+      <div id="bossLeaderboardContent"><div class="boss-empty">Loading public profiles…</div></div>
     </div>
   </section>
 
@@ -840,6 +870,15 @@
       <button class="action-btn" id="bossCharModalCancel">Cancel</button>
       <button class="action-btn primary" id="bossCharModalSubmit">Add Character</button>
     </div>
+  </div>
+</div>
+
+<!-- Public account stats modal -->
+<div class="modal-overlay" id="bossPublicModal">
+  <div class="modal modal-wide">
+    <button class="modal-close" id="bossPublicModalClose">✕</button>
+    <h3 id="bossPublicModalTitle">Stats</h3>
+    <div class="modal-scroll" id="bossPublicModalContent"></div>
   </div>
 </div>
 
@@ -1615,7 +1654,7 @@ async function bossCreateAccount(rawName, pin) {
   if (!db) throw new Error("Firebase is not configured. Follow the setup guide to enable cloud accounts.");
   const existing = await fbLoad(name);
   if (existing) throw new Error("That account name is already taken.");
-  const data = { name, pin, characters: [], attempts: [], createdAt: Date.now() };
+  const data = { name, pin, characters: [], attempts: [], createdAt: Date.now(), isPublic: false };
   const ok = await fbSave(name, data);
   if (!ok) throw new Error("Failed to save. Check your Firebase configuration.");
   bossAccount = data;
@@ -1681,6 +1720,7 @@ function renderBossAll() {
     document.getElementById("bossAcctName").textContent = bossAccount.name;
     document.getElementById("bossCharGroup").style.display = "";
     renderBossCharSelect();
+    renderBossPublicToggle();
   } else {
     document.getElementById("bossCharGroup").style.display = "none";
   }
@@ -1911,6 +1951,148 @@ function renderBossHistory() {
   content.innerHTML = html;
 }
 
+// ---- Public toggle ----
+function renderBossPublicToggle() {
+  const btn = document.getElementById("bossTogglePublicBtn");
+  if (!btn) return;
+  const isPublic = !!bossAccount?.isPublic;
+  btn.textContent = isPublic ? "✓ Public Profile" : "Private Profile";
+  btn.className   = "action-btn" + (isPublic ? " public-active" : "");
+}
+
+async function bossTogglePublic() {
+  if (!bossIsLoggedIn()) return;
+  bossAccount.isPublic = !bossAccount.isPublic;
+  renderBossPublicToggle();
+  await bossPersist();
+}
+
+// ---- Leaderboard ----
+let leaderboardAccounts = [];
+
+async function fetchLeaderboard() {
+  const content = document.getElementById("bossLeaderboardContent");
+  if (!db) {
+    content.innerHTML = '<div class="boss-empty">Community features require a cloud account.</div>';
+    return;
+  }
+  content.innerHTML = '<div class="boss-empty">Loading…</div>';
+  try {
+    const snap = await db.collection("bossAccounts").where("isPublic", "==", true).get();
+    leaderboardAccounts = snap.docs.map(d => d.data());
+    renderLeaderboard();
+  } catch(e) {
+    content.innerHTML = '<div class="boss-empty">Failed to load community data.</div>';
+    console.error("Leaderboard fetch error:", e);
+  }
+}
+
+function renderLeaderboard() {
+  const content = document.getElementById("bossLeaderboardContent");
+  const filter  = (document.getElementById("bossLeaderboardSearch")?.value || "").trim().toLowerCase();
+  const accounts = filter
+    ? leaderboardAccounts.filter(a => a.name.includes(filter))
+    : leaderboardAccounts;
+
+  if (accounts.length === 0) {
+    content.innerHTML = '<div class="boss-empty">No public profiles found.</div>';
+    return;
+  }
+
+  const rows = accounts.map(a => {
+    const total   = a.attempts?.length || 0;
+    const boss    = a.attempts?.filter(x => x.outcome === "boss").length || 0;
+    const enraged = total - boss;
+    const rate    = total > 0 ? (boss / total * 100) : 0;
+    return { name: a.name, total, boss, enraged, rate };
+  }).sort((a, b) => b.total - a.total);
+
+  let html = `<table class="boss-stats-table">
+    <thead><tr>
+      <th>Account</th><th style="text-align:right">Attempts</th><th style="text-align:right">Boss</th><th style="text-align:right">Enraged</th><th style="text-align:right">Rate</th>
+    </tr></thead><tbody>`;
+
+  rows.forEach(r => {
+    const rateClass = r.total === 0 ? "rate-zero" : r.rate >= 50 ? "rate-high" : r.rate >= 20 ? "rate-mid" : "rate-low";
+    html += `<tr class="leaderboard-row" data-acct="${r.name}">
+      <td style="color:var(--gold-bright);font-family:'Cinzel',serif;font-weight:500;letter-spacing:0.05em">${r.name}</td>
+      <td style="text-align:right;font-variant-numeric:tabular-nums;color:var(--text-muted)">${r.total}</td>
+      <td style="text-align:right;color:#8ac85a;font-variant-numeric:tabular-nums">${r.boss}</td>
+      <td style="text-align:right;color:#e07070;font-variant-numeric:tabular-nums">${r.enraged}</td>
+      <td style="text-align:right" class="${rateClass}">${r.total > 0 ? r.rate.toFixed(0) + "%" : "—"}</td>
+    </tr>`;
+  });
+
+  html += "</tbody></table>";
+  content.innerHTML = html;
+
+  content.querySelectorAll(".leaderboard-row").forEach(row => {
+    row.addEventListener("click", () => {
+      const acc = leaderboardAccounts.find(a => a.name === row.dataset.acct);
+      if (acc) openPublicStatsModal(acc);
+    });
+  });
+}
+
+function openPublicStatsModal(account) {
+  const TIERS   = ["Bronze", "Silver", "Gold", "Mythril"];
+  const attempts = account.attempts || [];
+  const total    = attempts.length;
+  const bossWins = attempts.filter(a => a.outcome === "boss").length;
+  const enraged  = total - bossWins;
+
+  document.getElementById("bossPublicModalTitle").textContent = account.name;
+
+  let html = "";
+  if (total === 0) {
+    html = '<div class="boss-empty">No attempts logged yet.</div>';
+  } else {
+    const map = {};
+    attempts.forEach(a => {
+      if (!map[a.boss]) map[a.boss] = { tier: a.tier, creature: a.creature || "", total: 0, boss: 0, enraged: 0 };
+      map[a.boss].total++;
+      if (a.outcome === "boss") map[a.boss].boss++; else map[a.boss].enraged++;
+    });
+
+    html = `<table class="boss-stats-table">
+      <thead><tr><th>Boss</th><th>Creature</th><th>Attempts</th><th>Boss</th><th>Enraged</th><th>Rate</th></tr></thead>
+      <tbody>`;
+
+    TIERS.forEach(tier => {
+      const rows = Object.entries(map).filter(([, v]) => v.tier === tier);
+      if (!rows.length) return;
+      html += `<tr class="tier-group-header"><td colspan="6"><span class="tier-badge tier-${tier}">${tier}</span></td></tr>`;
+      rows.forEach(([bossName, s]) => {
+        const rate      = s.total > 0 ? (s.boss / s.total * 100) : 0;
+        const rateClass = s.total === 0 ? "rate-zero" : rate >= 50 ? "rate-high" : rate >= 20 ? "rate-mid" : "rate-low";
+        html += `<tr>
+          <td style="color:var(--text);font-weight:500">${bossName}</td>
+          <td style="color:var(--text-muted);font-style:italic;font-size:13px">${s.creature}</td>
+          <td>${s.total}</td>
+          <td style="color:#8ac85a">${s.boss}</td>
+          <td style="color:#e07070">${s.enraged}</td>
+          <td class="${rateClass}">${s.total > 0 ? rate.toFixed(0) + "%" : "—"}</td>
+        </tr>`;
+      });
+    });
+
+    const totalRate      = total > 0 ? (bossWins / total * 100) : 0;
+    const totalRateClass = total === 0 ? "rate-zero" : totalRate >= 50 ? "rate-high" : totalRate >= 20 ? "rate-mid" : "rate-low";
+    html += `<tr class="stats-total-row">
+      <td colspan="2">Total</td>
+      <td>${total}</td>
+      <td style="color:#8ac85a">${bossWins}</td>
+      <td style="color:#e07070">${enraged}</td>
+      <td class="${totalRateClass}">${total > 0 ? totalRate.toFixed(0) + "%" : "—"}</td>
+    </tr></tbody></table>`;
+  }
+
+  document.getElementById("bossPublicModalContent").innerHTML = html;
+  document.getElementById("bossPublicModal").classList.add("open");
+}
+
+function closePublicModal() { document.getElementById("bossPublicModal").classList.remove("open"); }
+
 // ---- Modal helpers ----
 let bossModalMode = "create";
 
@@ -1940,6 +2122,12 @@ function openCharModal() {
 function closeCharModal() { document.getElementById("bossCharModal").classList.remove("open"); }
 
 // ---- Event wiring ----
+document.getElementById("bossTogglePublicBtn").addEventListener("click", bossTogglePublic);
+document.getElementById("bossLeaderboardRefreshBtn").addEventListener("click", fetchLeaderboard);
+document.getElementById("bossLeaderboardSearch").addEventListener("input", renderLeaderboard);
+document.getElementById("bossPublicModalClose").addEventListener("click", closePublicModal);
+document.getElementById("bossPublicModal").addEventListener("click", e => { if (e.target === e.currentTarget) closePublicModal(); });
+
 document.getElementById("bossCreateAccountBtn").addEventListener("click", () => openAccountModal("create"));
 document.getElementById("bossSignInBtn").addEventListener("click",        () => openAccountModal("signin"));
 document.getElementById("bossSignOutBtn").addEventListener("click", () => { if (confirm("Sign out of your account?")) bossSignOut(); });
@@ -2084,6 +2272,7 @@ async function initBossTracker() {
   bossState.tier = "Bronze";
   bossState.bossName = null;
   renderBossAll();
+  fetchLeaderboard();
 }
 
 initBossTracker();
